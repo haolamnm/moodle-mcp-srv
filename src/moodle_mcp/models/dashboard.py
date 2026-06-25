@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from moodle_mcp.models.calendar import Deadline  # noqa: TC001
 
@@ -26,3 +26,4 @@ class DashboardSummary(BaseModel):
     new_grades: list[DashboardGrade]
     recent_activity: list[RecentActivity]
     total_pending: int
+    warnings: list[str] = Field(default_factory=list)
