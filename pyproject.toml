@@ -1,6 +1,6 @@
 [project]
 name = "moodle-mcp-srv"
-version = "0.1.0"
+version = "0.2.0"
 description = "Your Moodle dashboard, available to AI."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -250,7 +250,7 @@ typeCheckingMode = "strict"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.1.0"
+version = "0.2.0"
 version_files = ["pyproject.toml:version"]
 tag_format = "v$version"
 
