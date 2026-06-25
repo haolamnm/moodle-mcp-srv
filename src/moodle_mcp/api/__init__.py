@@ -10,14 +10,21 @@ from moodle_mcp.api.assignments import (
     get_feedback,
     submit_assignment,
 )
-from moodle_mcp.api.calendar import get_calendar_events, get_upcoming_deadlines
+from moodle_mcp.api.calendar import (
+    create_calendar_event,
+    get_calendar_events,
+    get_upcoming_deadlines,
+)
 from moodle_mcp.api.courses import get_course_content, get_my_courses, get_site_info
 from moodle_mcp.api.dashboard import dashboard_summary
 from moodle_mcp.api.doctor import run_doctor
 from moodle_mcp.api.features import (
+    FailureKind,
     MoodleFeature,
     UnavailableFeatureError,
+    access_error_message,
     build_capability_report,
+    classify_failure,
     ensure_feature_available,
     feature_unavailable_message,
     get_available_functions,
@@ -31,7 +38,7 @@ from moodle_mcp.api.forums import (
     get_forum_discussions,
     post_forum_reply,
 )
-from moodle_mcp.api.grades import get_course_progress, get_grades
+from moodle_mcp.api.grades import get_course_progress, get_grades, mark_activity_complete
 from moodle_mcp.api.quizzes import get_quiz_attempt_review, get_quiz_attempts, get_quizzes
 from moodle_mcp.models import (
     AnnouncementPost,
@@ -77,6 +84,7 @@ __all__ = [
     "Deadline",
     "DoctorCheck",
     "DoctorReport",
+    "FailureKind",
     "FeatureAvailability",
     "FeedbackGrade",
     "ForumDiscussion",
@@ -95,8 +103,11 @@ __all__ = [
     "SubmissionStatus",
     "UnavailableFeatureError",
     "WriteReceipt",
+    "access_error_message",
     "build_capability_report",
     "check_submission",
+    "classify_failure",
+    "create_calendar_event",
     "create_forum_discussion",
     "dashboard_summary",
     "ensure_feature_available",
@@ -119,6 +130,7 @@ __all__ = [
     "get_server_capabilities",
     "get_site_info",
     "get_upcoming_deadlines",
+    "mark_activity_complete",
     "post_forum_reply",
     "required_function_names",
     "reset_available_functions_cache",
