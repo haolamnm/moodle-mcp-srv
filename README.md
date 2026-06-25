@@ -35,19 +35,32 @@ Some Moodle sites hide or disable self-service tokens. In that case, ask the Moo
 Quick connection check after setting `.env.local`:
 
 ```sh
-sh scripts/ping.sh
+uv run moodle-mcp ping
 ```
 
-PowerShell:
+Setup diagnostics:
 
-```powershell
-pwsh -File scripts/ping.ps1
+```sh
+uv run moodle-mcp doctor
+uv run moodle-mcp doctor --json
 ```
 
 Run over stdio:
 
 ```sh
 uv run moodle-mcp
+```
+
+Run over HTTP:
+
+```sh
+uv run moodle-mcp serve --http --host 127.0.0.1 --port 8000
+```
+
+Inspect the local MCP surface:
+
+```sh
+uv run moodle-mcp inspect
 ```
 
 ## Development

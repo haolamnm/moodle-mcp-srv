@@ -11,6 +11,7 @@ dependencies = [
     "pydantic-settings>=2.14.2",
     "structlog>=26.1.0",
     "tenacity>=9.1.4",
+    "typer>=0.26.7",
 ]
 
 [project.scripts]
@@ -148,6 +149,7 @@ known-third-party = [
     "structlog",
     "tenacity",
     "time_machine",
+    "typer",
 ]
 force-sort-within-sections = true
 combine-as-imports = true
