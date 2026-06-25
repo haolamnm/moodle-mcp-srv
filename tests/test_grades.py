@@ -160,3 +160,36 @@ def test_get_course_progress_returns_empty_for_unexpected_response(
     monkeypatch.setattr(grades, "get_moodle_api_data", fake_get_moodle_api_data)
 
     assert asyncio.run(grades.get_course_progress(10)) == []
+
+
+def test_mark_activity_complete_defaults_to_dry_run() -> None:
+    receipt = asyncio.run(grades.mark_activity_complete(5))
+
+    assert receipt.dry_run is True
+    assert receipt.action == "mark_activity_complete"
+    assert receipt.target_id == 5
+    assert receipt.would_change == ["Mark this activity complete."]
+
+
+def test_mark_activity_complete_calls_moodle_when_confirmed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, str] = {}
+
+    async def fake_get_moodle_api_data(
+        function: APIFunction,
+        params: dict[str, str] | None = None,
+    ) -> list[object]:
+        await asyncio.sleep(0)
+        assert function == (APIFunction.core_completion_update_activity_completion_status_manually)
+        captured.update(params or {})
+        return []
+
+    monkeypatch.setattr(grades, "get_moodle_api_data", fake_get_moodle_api_data)
+
+    receipt = asyncio.run(
+        grades.mark_activity_complete(5, completed=False, dry_run=False, reason="User confirmed")
+    )
+
+    assert captured == {"cmid": "5", "completed": "0"}
+    assert receipt.changed == ["Marked activity 5 incomplete."]

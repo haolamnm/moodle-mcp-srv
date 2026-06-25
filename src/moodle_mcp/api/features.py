@@ -23,8 +23,11 @@ class MoodleFeature(StrEnum):
     assignments = "assignments"
     assignment_submission = "assignment_submission"
     write_assignment = "write_assignment"
+    submit_for_grading = "submit_for_grading"
     grades = "grades"
     progress = "progress"
+    write_completion = "write_completion"
+    write_calendar = "write_calendar"
     quizzes = "quizzes"
     quiz_attempts = "quiz_attempts"
     quiz_review = "quiz_review"
@@ -45,8 +48,13 @@ FEATURE_REQUIREMENTS: dict[MoodleFeature, tuple[APIFunction, ...]] = {
     MoodleFeature.assignments: (APIFunction.mod_assign_get_assignments,),
     MoodleFeature.assignment_submission: (APIFunction.mod_assign_get_submission_status,),
     MoodleFeature.write_assignment: (APIFunction.mod_assign_save_submission,),
+    MoodleFeature.submit_for_grading: (APIFunction.mod_assign_submit_for_grading,),
     MoodleFeature.grades: (APIFunction.gradereport_user_get_grade_items,),
     MoodleFeature.progress: (APIFunction.core_completion_get_activities_completion_status,),
+    MoodleFeature.write_completion: (
+        APIFunction.core_completion_update_activity_completion_status_manually,
+    ),
+    MoodleFeature.write_calendar: (APIFunction.core_calendar_create_calendar_events,),
     MoodleFeature.quizzes: (APIFunction.mod_quiz_get_quizzes_by_courses,),
     MoodleFeature.quiz_attempts: (
         APIFunction.core_webservice_get_site_info,
@@ -75,9 +83,56 @@ FEATURE_REQUIREMENTS: dict[MoodleFeature, tuple[APIFunction, ...]] = {
 WRITE_FEATURES = frozenset(
     {
         MoodleFeature.write_assignment,
+        MoodleFeature.submit_for_grading,
         MoodleFeature.write_forum,
+        MoodleFeature.write_completion,
+        MoodleFeature.write_calendar,
     }
 )
+
+
+class FailureKind(StrEnum):
+    """How a Moodle call failed, used to choose the right guidance message."""
+
+    missing_function = "missing_function"
+    access_denied = "access_denied"
+    unknown = "unknown"
+
+
+_MISSING_FUNCTION_CODES = frozenset({"invalidrecord"})
+_ACCESS_DENIED_CODES = frozenset(
+    {
+        "accessexception",
+        "nopermissions",
+        "required_capability_exception",
+        "webservice_access_exception",
+    }
+)
+
+
+def classify_failure(error_code: str) -> FailureKind:
+    """Classify a Moodle error code into setup-vs-access-vs-unknown guidance."""
+    if error_code in _MISSING_FUNCTION_CODES:
+        return FailureKind.missing_function
+    if error_code in _ACCESS_DENIED_CODES:
+        return FailureKind.access_denied
+    return FailureKind.unknown
+
+
+def access_error_message(feature: MoodleFeature, error_code: str) -> str:
+    """Return guidance for an Access Error: Moodle refused this request at call time.
+
+    This is distinct from a missing Moodle Feature: the function may exist but your
+    Moodle account or token cannot access it on this site. Moodle enforces this;
+    moodle-mcp-srv does not authorize anything.
+    """
+    return (
+        f"Moodle refused this request for '{feature.value}' (error: {error_code}). "
+        "Your Moodle account may not have access to this on the current site, or the "
+        "Web Service Function Name may not be authorized for your token. Moodle enforces "
+        "this; moodle-mcp-srv does not. Run `moodle-mcp doctor` for setup guidance."
+    )
+
 
 _available_functions_loaded = False
 _available_functions_cache: frozenset[str] | None = None

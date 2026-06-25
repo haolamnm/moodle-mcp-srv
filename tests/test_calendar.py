@@ -109,3 +109,44 @@ def test_get_upcoming_deadlines_excludes_overdue_and_sets_quiz_course(
 
     assert [deadline.name for deadline in deadlines] == ["New Assignment", "Quiz 1"]
     assert [deadline.course for deadline in deadlines] == ["Algorithms", "Algorithms"]
+
+
+def test_create_calendar_event_defaults_to_dry_run() -> None:
+    receipt = asyncio.run(calendar.create_calendar_event("Study", 1_000_000))
+
+    assert receipt.dry_run is True
+    assert receipt.action == "create_calendar_event"
+    assert receipt.target_id == "Study"
+    assert receipt.moodle_function == APIFunction.core_calendar_create_calendar_events.value
+
+
+def test_create_calendar_event_calls_moodle_when_confirmed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, str] = {}
+
+    async def fake_get_moodle_api_data(
+        function: APIFunction,
+        params: dict[str, str] | None = None,
+    ) -> dict[str, object]:
+        await asyncio.sleep(0)
+        assert function == APIFunction.core_calendar_create_calendar_events
+        captured.update(params or {})
+        return {"events": [{"id": 7}]}
+
+    monkeypatch.setattr(calendar, "get_moodle_api_data", fake_get_moodle_api_data)
+
+    receipt = asyncio.run(
+        calendar.create_calendar_event(
+            "Study", 1_000_000, "Chapter 4", dry_run=False, reason="User confirmed"
+        )
+    )
+
+    assert captured == {
+        "events[0][name]": "Study",
+        "events[0][timestart]": "1000000",
+        "events[0][eventtype]": "user",
+        "events[0][description]": "Chapter 4",
+    }
+    assert receipt.changed == ["Created calendar event 7."]
+    assert receipt.target_id == 7

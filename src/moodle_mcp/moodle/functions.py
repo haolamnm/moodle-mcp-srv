@@ -16,12 +16,17 @@ class APIFunction(StrEnum):
     core_completion_get_activities_completion_status = (
         "core_completion_get_activities_completion_status"
     )
+    core_completion_update_activity_completion_status_manually = (
+        "core_completion_update_activity_completion_status_manually"
+    )
+    core_calendar_create_calendar_events = "core_calendar_create_calendar_events"
     core_files_get_files = "core_files_get_files"
 
     # Assignments
     mod_assign_get_assignments = "mod_assign_get_assignments"
     mod_assign_get_submission_status = "mod_assign_get_submission_status"
     mod_assign_save_submission = "mod_assign_save_submission"
+    mod_assign_submit_for_grading = "mod_assign_submit_for_grading"
 
     # Grades
     gradereport_user_get_grade_items = "gradereport_user_get_grade_items"

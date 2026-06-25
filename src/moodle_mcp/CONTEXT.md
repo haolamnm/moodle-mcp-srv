@@ -49,8 +49,12 @@ A post in a news-type Forum.
 _Avoid_: News post, broadcast
 
 **Calendar Event**:
-An upcoming event across all Courses with start time and description.
+An upcoming event across all Courses with start time and description. Also the personal (user) event created by `create_calendar_event`.
 _Avoid_: Schedule item, reminder
+
+**Activity Completion**:
+The completion state of a Course module (complete/incomplete), read via progress and set manually by `mark_activity_complete` where manual completion is enabled.
+_Avoid_: Progress flag, done status
 
 **Dashboard Summary**:
 Aggregated morning brief: overdue items, due today/week, new grades.
@@ -59,3 +63,7 @@ _Avoid_: Digest, homepage, overview
 **Moodle Feature**:
 An app-level capability mapped to required Moodle Web Service Function Names for diagnostics and friendly availability errors.
 _Avoid_: Permission, capability, authorization
+
+**Access Error**:
+A runtime Moodle refusal of an otherwise-available call (e.g. `accessexception`), distinct from a missing Moodle Feature. Moodle enforces it; the server never authorizes anything.
+_Avoid_: Permission denied, forbidden, unauthorized

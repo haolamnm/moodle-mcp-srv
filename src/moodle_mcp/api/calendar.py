@@ -13,6 +13,7 @@ from moodle_mcp.api._helpers import (
     get_enrolled_courses,
     limit_items,
     now_ts,
+    require_write_reason,
 )
 from moodle_mcp.api.coercion import (
     as_int,
@@ -22,11 +23,16 @@ from moodle_mcp.api.coercion import (
     as_str,
     object_list,
 )
-from moodle_mcp.models import CalendarEvent, Deadline
-from moodle_mcp.moodle import APIFunction, format_array_params, get_moodle_api_data
+from moodle_mcp.models import CalendarEvent, Deadline, WriteReceipt
+from moodle_mcp.moodle import (
+    APIFunction,
+    MoodleAPIError,
+    format_array_params,
+    get_moodle_api_data,
+)
 
 if TYPE_CHECKING:
-    from moodle_mcp.models import JsonObject
+    from moodle_mcp.models import JsonObject, MoodleResponse
 
 
 async def get_calendar_events(daysahead: int = 14, limit: int = 50) -> list[CalendarEvent]:
@@ -47,21 +53,84 @@ async def get_calendar_events(daysahead: int = 14, limit: int = 50) -> list[Cale
 
 
 async def get_upcoming_deadlines(daysahead: int = 7, limit: int = 50) -> list[Deadline]:
-    """Return a merged, time-sorted list of upcoming deadlines."""
+    """Return a merged, time-sorted list of upcoming deadlines.
+
+    Assignment and quiz deadlines degrade independently: if one source's Moodle
+    Web Service Function Name is unavailable or refused, its deadlines are skipped
+    rather than failing the whole list.
+    """
     courses = await get_enrolled_courses()
     course_ids = [course_id(course) for course in courses if course_id(course) > 0]
     if not course_ids:
         return []
 
-    deadlines = await _assignment_deadlines(course_ids)
     course_map = {course_id(course): course_name(course) for course in courses}
-    deadlines.extend(await _quiz_deadlines(course_ids, course_map))
+    deadlines: list[Deadline] = []
+    for source in (_assignment_deadlines(course_ids), _quiz_deadlines(course_ids, course_map)):
+        try:
+            deadlines.extend(await source)
+        except MoodleAPIError:
+            continue
 
     deadlines.sort(key=lambda deadline: deadline.duedate)
     current = now_ts()
     cutoff = current + daysahead * DAYS_SECONDS
     upcoming = [deadline for deadline in deadlines if current <= deadline.duedate <= cutoff]
     return limit_items(upcoming, limit)
+
+
+async def create_calendar_event(
+    name: str,
+    timestart: int,
+    description: str | None = None,
+    dry_run: bool = True,
+    reason: str | None = None,
+) -> WriteReceipt:
+    """Create a personal (user) Calendar Event."""
+    if dry_run:
+        return WriteReceipt(
+            dry_run=True,
+            action="create_calendar_event",
+            target_type="calendar_event",
+            target_id=name,
+            would_change=["Create a personal Moodle calendar event."],
+            warnings=["Dry run only. Pass dry_run=False with a reason to create this event."],
+            moodle_function=APIFunction.core_calendar_create_calendar_events.value,
+        )
+
+    require_write_reason(reason)
+    params: dict[str, str] = {
+        "events[0][name]": name,
+        "events[0][timestart]": str(timestart),
+        "events[0][eventtype]": "user",
+    }
+    if description is not None:
+        params["events[0][description]"] = description
+
+    data = await get_moodle_api_data(APIFunction.core_calendar_create_calendar_events, params)
+    event_id = _first_event_id(data)
+    return WriteReceipt(
+        dry_run=False,
+        action="create_calendar_event",
+        target_type="calendar_event",
+        target_id=event_id if event_id is not None else name,
+        reason=reason,
+        changed=(
+            [f"Created calendar event {event_id}."]
+            if event_id is not None
+            else ["Moodle accepted the calendar event request."]
+        ),
+        moodle_function=APIFunction.core_calendar_create_calendar_events.value,
+    )
+
+
+def _first_event_id(data: MoodleResponse) -> int | None:
+    if not isinstance(data, dict):
+        return None
+    events = object_list(data.get("events"))
+    if not events:
+        return None
+    return as_optional_int(events[0].get("id"))
 
 
 def _format_events(events_raw: list[JsonObject]) -> list[CalendarEvent]:

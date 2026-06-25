@@ -21,6 +21,12 @@ def now_ts() -> int:
     return int(datetime.now(UTC).timestamp())
 
 
+def require_write_reason(reason: str | None) -> None:
+    """Raise when a write tool is invoked without a human-readable reason."""
+    if reason is None or not reason.strip():
+        raise ValueError("Write tools require a human-readable reason when dry_run is false.")
+
+
 async def get_enrolled_courses(userid: int | None = None) -> list[JsonObject]:
     """Fetch all courses the current user is enrolled in."""
     uid = userid or await resolve_current_user_id()

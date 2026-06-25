@@ -239,17 +239,16 @@ def test_submit_assignment_requires_reason_when_not_dry_run() -> None:
         asyncio.run(assignments.submit_assignment(99, "Done", dry_run=False))
 
 
-def test_submit_assignment_calls_moodle_when_confirmed(monkeypatch: pytest.MonkeyPatch) -> None:
-    captured_params: dict[str, str] = {}
+def test_submit_assignment_draft_only_saves(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[APIFunction, dict[str, str] | None]] = []
 
     async def fake_get_moodle_api_data(
         function: APIFunction,
         params: dict[str, str] | None = None,
-    ) -> dict[str, object]:
+    ) -> list[object]:
         await asyncio.sleep(0)
-        assert function == APIFunction.mod_assign_save_submission
-        captured_params.update(params or {})
-        return {"ok": True}
+        calls.append((function, params))
+        return []
 
     monkeypatch.setattr(assignments, "get_moodle_api_data", fake_get_moodle_api_data)
 
@@ -259,5 +258,36 @@ def test_submit_assignment_calls_moodle_when_confirmed(monkeypatch: pytest.Monke
         )
     )
 
-    assert captured_params == {"assignmentid": "99", "onlinetext": "Done", "save": "1"}
-    assert receipt.changed == ["Save assignment submission draft."]
+    assert calls == [
+        (APIFunction.mod_assign_save_submission, {"assignmentid": "99", "onlinetext": "Done"})
+    ]
+    assert receipt.changed == ["Saved assignment submission draft."]
+    assert receipt.moodle_function == APIFunction.mod_assign_save_submission.value
+
+
+def test_submit_assignment_submits_for_grading(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[APIFunction, dict[str, str] | None]] = []
+
+    async def fake_get_moodle_api_data(
+        function: APIFunction,
+        params: dict[str, str] | None = None,
+    ) -> list[object]:
+        await asyncio.sleep(0)
+        calls.append((function, params))
+        return []
+
+    monkeypatch.setattr(assignments, "get_moodle_api_data", fake_get_moodle_api_data)
+
+    receipt = asyncio.run(
+        assignments.submit_assignment(99, "Done", dry_run=False, reason="User confirmed")
+    )
+
+    assert calls == [
+        (APIFunction.mod_assign_save_submission, {"assignmentid": "99", "onlinetext": "Done"}),
+        (
+            APIFunction.mod_assign_submit_for_grading,
+            {"assignmentid": "99", "acceptsubmissionstatement": "1"},
+        ),
+    ]
+    assert receipt.changed == ["Saved online text and submitted the assignment for grading."]
+    assert receipt.moodle_function == APIFunction.mod_assign_submit_for_grading.value

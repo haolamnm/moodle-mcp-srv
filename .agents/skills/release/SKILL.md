@@ -27,7 +27,7 @@ Use when the user says `/release`, "cut a release", "tag a version", or asks to 
    - `gh auth status`
 2. Block if not on `main`, dirty without confirmed release edits, behind `origin/main`, or missing `gh` auth.
 3. Determine the target version from the requested bump, `pyproject.toml`, existing tags, and unreleased commits.
-4. Update `CHANGELOG.md` with concise user-facing entries grouped as major, minor, or patch. Include commit hashes when available.
+4. Update `CHANGELOG.md` in the changesets format defined by the `changelog` skill: group entries as Major, Minor, or Patch with a commit hash per entry.
 5. If the version changes, update project version metadata using the repo's configured tooling or the smallest direct edit.
 6. Run the release checklist checks that fit the changed surface. Do not skip failed checks silently.
 7. Commit release prep with `chore(release): vX.Y.Z` after confirmation.
@@ -39,9 +39,10 @@ Use when the user says `/release`, "cut a release", "tag a version", or asks to 
 
 ## Changelog Rules
 
+- Maintain `CHANGELOG.md` in the changesets format defined by the `changelog` skill: `## <version>` headers with `### Major Changes`, `### Minor Changes`, and `### Patch Changes`, one `` `hash` Thanks @author! — … `` bullet per change.
+- Map breaking changes to Major, new features to Minor, and fixes/docs/refactors to Patch.
 - Keep `CHANGELOG.md` compact and reverse chronological.
 - Describe user-visible changes, not implementation trivia.
-- Separate breaking changes from features, fixes, docs, and maintenance.
 - Keep Moodle examples generic; never include live course names, grades, submissions, users, private URLs, or tokens.
 
 ## Blockers

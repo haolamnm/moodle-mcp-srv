@@ -14,3 +14,4 @@ Project-native workflows for `moodle-mcp-srv`. Rules in `.agents/rules` are alwa
 - `triage` - turn issue-like requests into clear next states and briefs.
 - `ship-pr` - ship current work through a GitHub pull request using `git` and `gh`.
 - `release` - cut a release with changelog, tag, checks, and GitHub release flow.
+- `changelog` - maintain `CHANGELOG.md` in the changesets format as merges land.

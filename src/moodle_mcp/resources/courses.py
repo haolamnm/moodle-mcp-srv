@@ -44,6 +44,12 @@ def register(mcp: FastMCP) -> None:
         description="Read-only cross-course dashboard summary for the current Moodle user.",
         mime_type="application/json",
     )(dashboard_summary_resource)
+    mcp.resource(
+        "moodle://deadlines/upcoming",
+        name="upcoming_deadlines_resource",
+        description="Read-only merged upcoming deadlines for the current Moodle user.",
+        mime_type="application/json",
+    )(upcoming_deadlines_resource)
 
 
 async def course_content_resource(courseid: int) -> str:
@@ -76,3 +82,9 @@ async def grade_schema_resource(courseid: int) -> str:
 async def dashboard_summary_resource() -> str:
     """Return dashboard summary as compact JSON resource text."""
     return api.DashboardSummary.model_validate(await api.dashboard_summary()).model_dump_json()
+
+
+async def upcoming_deadlines_resource() -> str:
+    """Return merged upcoming deadlines as compact JSON resource text."""
+    deadlines = await api.get_upcoming_deadlines()
+    return TypeAdapter(list[api.Deadline]).dump_json(deadlines).decode()

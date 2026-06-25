@@ -11,26 +11,61 @@ from moodle_mcp.moodle import MoodleAPIError
 
 
 async def dashboard_summary() -> DashboardSummary:
-    """Aggregate overdue assignments, upcoming assignments, and new grades."""
+    """Aggregate overdue assignments, upcoming assignments, and new grades.
+
+    Each section degrades independently: if a Moodle Web Service Function Name is
+    unavailable or refused, that section is skipped and a warning is recorded
+    instead of failing the whole summary.
+    """
     current = now_ts()
-    courses = await get_my_courses()
+    warnings: list[str] = []
+
+    try:
+        courses = await get_my_courses()
+    except MoodleAPIError as exc:
+        return DashboardSummary(
+            overdue=[],
+            due_today=[],
+            due_this_week=[],
+            new_grades=[],
+            recent_activity=[],
+            total_pending=0,
+            warnings=[_section_warning("courses", exc)],
+        )
+
     course_ids = [course.id for course in courses]
     course_map = {course.id: course.fullname for course in courses}
 
-    overdue, due_today, due_this_week = _assignment_windows(
-        assignments=await get_assignments(course_ids),
-        course_map=course_map,
-        current=current,
-    )
+    overdue: list[Deadline] = []
+    due_today: list[Deadline] = []
+    due_this_week: list[Deadline] = []
+    try:
+        overdue, due_today, due_this_week = _assignment_windows(
+            assignments=await get_assignments(course_ids),
+            course_map=course_map,
+            current=current,
+        )
+    except MoodleAPIError as exc:
+        warnings.append(_section_warning("assignments", exc))
+
+    new_grades, grade_warning = await _new_grades(course_ids)
+    if grade_warning is not None:
+        warnings.append(grade_warning)
 
     return DashboardSummary(
         overdue=overdue,
         due_today=due_today,
         due_this_week=due_this_week,
-        new_grades=await _new_grades(course_ids),
+        new_grades=new_grades,
         recent_activity=[],
         total_pending=len(overdue) + len(due_today) + len(due_this_week),
+        warnings=warnings,
     )
+
+
+def _section_warning(section: str, exc: MoodleAPIError) -> str:
+    """Build a privacy-safe warning that names the skipped section and error code."""
+    return f"Skipped {section}: Moodle returned [{exc.error_code}]."
 
 
 def _assignment_windows(
@@ -78,12 +113,12 @@ def _assignment_deadline(
     )
 
 
-async def _new_grades(course_ids: list[int]) -> list[DashboardGrade]:
+async def _new_grades(course_ids: list[int]) -> tuple[list[DashboardGrade], str | None]:
     new_grades: list[DashboardGrade] = []
     try:
         grades = await get_grades(course_ids)
-    except MoodleAPIError:
-        return []
+    except MoodleAPIError as exc:
+        return [], _section_warning("grades", exc)
 
     for grade in grades:
         raw_grade = grade.grade_raw
@@ -97,4 +132,4 @@ async def _new_grades(course_ids: list[int]) -> list[DashboardGrade]:
                 grade=raw_grade,
             )
         )
-    return new_grades[:10]
+    return new_grades[:10], None
