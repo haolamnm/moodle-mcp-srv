@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from moodle_mcp.api._helpers import get_course_ids, limit_items
+from moodle_mcp.api._helpers import get_course_ids, limit_items, require_write_reason
 from moodle_mcp.api.coercion import (
     as_bool,
     as_int,
@@ -59,7 +59,7 @@ async def post_forum_reply(
             moodle_function=APIFunction.mod_forum_add_discussion_post.value,
         )
 
-    _require_write_reason(reason)
+    require_write_reason(reason)
     params: dict[str, str] = {
         "discussionid": str(discussionid),
         "postsubject": subject or "Re: Discussion",
@@ -109,7 +109,7 @@ async def create_forum_discussion(
             moodle_function=APIFunction.mod_forum_add_discussion.value,
         )
 
-    _require_write_reason(reason)
+    require_write_reason(reason)
     params: dict[str, str] = {
         "forumid": str(forumid),
         "subject": subject,
@@ -208,8 +208,3 @@ def _format_discussion(discussion: JsonObject) -> ForumDiscussion:
         postcount=postcount,
         pinned=as_bool(discussion.get("pinned")),
     )
-
-
-def _require_write_reason(reason: str | None) -> None:
-    if reason is None or not reason.strip():
-        raise ValueError("Write tools require a human-readable reason when dry_run is false.")
