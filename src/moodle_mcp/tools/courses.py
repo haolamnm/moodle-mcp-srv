@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from fastmcp import Context  # noqa: TC002
+from fastmcp.exceptions import ToolError
 
 from moodle_mcp import api
 from moodle_mcp.models import (  # noqa: TC001
@@ -12,7 +13,9 @@ from moodle_mcp.models import (  # noqa: TC001
     Course,
     CourseSection,
     DashboardSummary,
+    NonEmptyText,
     SiteInfo,
+    WriteReceipt,
 )
 from moodle_mcp.tools.availability import raise_tool_error_for_moodle_failure, require_feature
 
@@ -26,6 +29,7 @@ def register(mcp: FastMCP) -> None:
     mcp.tool(get_my_courses)
     mcp.tool(get_course_content)
     mcp.tool(get_calendar_events)
+    mcp.tool(create_calendar_event)
     mcp.tool(dashboard_summary)
 
 
@@ -85,6 +89,36 @@ async def get_calendar_events(
         return await api.get_calendar_events(daysahead, limit)
     except api.MoodleAPIError as exc:
         raise_tool_error_for_moodle_failure(exc, feature)
+
+
+async def create_calendar_event(
+    name: NonEmptyText,
+    timestart: int,
+    description: NonEmptyText | None = None,
+    dry_run: bool = True,
+    reason: NonEmptyText | None = None,
+) -> WriteReceipt:
+    """Preview or create a personal Moodle calendar event.
+
+    Use dry_run=True to inspect the intended event without changing Moodle. Use dry_run=False only after the user explicitly confirms and provides reason.
+
+    Args:
+        name: Event title.
+        timestart: Event start time as a Unix timestamp.
+        description: Optional event description.
+        dry_run: If True, return a preview and do not write to Moodle.
+        reason: Human-readable reason required when dry_run is False.
+    Returns:
+        Calendar event write receipt.
+    """
+    try:
+        if not dry_run:
+            await require_feature(api.MoodleFeature.write_calendar)
+        return await api.create_calendar_event(name, timestart, description, dry_run, reason)
+    except ValueError as exc:
+        raise ToolError(str(exc)) from exc
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, api.MoodleFeature.write_calendar)
 
 
 async def dashboard_summary(ctx: Context | None = None) -> DashboardSummary:

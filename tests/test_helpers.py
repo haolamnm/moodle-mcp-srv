@@ -56,3 +56,17 @@ def test_limit_helpers_and_course_accessors(monkeypatch: pytest.MonkeyPatch) -> 
     assert _helpers.course_name({"fullname": "Algorithms"}) == "Algorithms"
     assert not _helpers.course_name({"fullname": 10})
     assert _helpers.course_id({"id": "42"}) == 42
+
+
+def test_require_write_reason_rejects_blank_reason() -> None:
+    for blank in (None, "", "   "):
+        raised = False
+        try:
+            _helpers.require_write_reason(blank)
+        except ValueError:
+            raised = True
+        assert raised, f"expected ValueError for reason {blank!r}"
+
+
+def test_require_write_reason_accepts_text() -> None:
+    _helpers.require_write_reason("User confirmed")
