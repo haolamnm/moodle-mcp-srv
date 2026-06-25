@@ -17,11 +17,13 @@ FastMCP server exposing Moodle courses, assignments, grades, quizzes, forums, an
 ## Safety Model
 
 - Moodle remains the source of truth for authorization.
+- Moodle Feature availability checks are setup guidance, not an authorization system.
 - Use a least-privilege Moodle web-service token.
 - The server does not need your Moodle username or password.
 - MCP clients can see Moodle data returned by tools and resources.
 - Write tools default to `dry_run=True`; real writes require explicit user confirmation and `reason`.
 - Do not expose HTTP transport publicly without authentication and reverse-proxy controls.
+- Do not commit live Moodle logs, fixtures, course names, grades, submissions, or user data.
 
 ## Non-Goals
 
@@ -99,7 +101,7 @@ Published package usage:
 uvx --from moodle-mcp-srv moodle-mcp
 ```
 
-See `examples/` for MCP client snippets for Claude Desktop, VS Code, Codex, OpenCode, and Factory Droid.
+See `examples/` for MCP client snippets for VS Code, Zed, Claude Desktop, Claude Code, Codex, Gemini CLI, OpenCode, Factory Droid, and Pi Code.
 
 ## Tool Surface
 

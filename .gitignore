@@ -126,6 +126,14 @@ venv.bak/
 .ropeproject
 tempCodeRunnerFile.py
 
+# Local MCP/client configs - may contain Moodle tokens or private site URLs.
+.mcp.json
+.zed/
+.gemini/
+.pi/
+.factory/
+.claude.json
+
 # Documentation sites
 /site
 

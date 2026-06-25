@@ -1,12 +1,26 @@
 {
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "moodle-api-url",
+      "description": "Moodle REST API URL",
+      "default": "https://moodle.example.edu/webservice/rest/server.php"
+    },
+    {
+      "type": "promptString",
+      "id": "moodle-api-token",
+      "description": "Moodle web-service token",
+      "password": true
+    }
+  ],
   "servers": {
     "moodle": {
       "type": "stdio",
       "command": "uvx",
       "args": ["--from", "moodle-mcp-srv", "moodle-mcp"],
       "env": {
-        "MOODLE_API_URL": "https://moodle.example.edu/webservice/rest/server.php",
-        "MOODLE_API_TOKEN": "replace-me"
+        "MOODLE_API_URL": "${input:moodle-api-url}",
+        "MOODLE_API_TOKEN": "${input:moodle-api-token}"
       }
     }
   }
