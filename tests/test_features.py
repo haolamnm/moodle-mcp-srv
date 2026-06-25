@@ -50,6 +50,21 @@ def test_feature_unavailable_error_message_is_actionable() -> None:
     assert "moodle-mcp doctor" in message
 
 
+def test_classify_failure_separates_setup_from_access() -> None:
+    assert features.classify_failure("invalidrecord") is features.FailureKind.missing_function
+    assert features.classify_failure("accessexception") is features.FailureKind.access_denied
+    assert features.classify_failure("nopermissions") is features.FailureKind.access_denied
+    assert features.classify_failure("invalidresponseexception") is features.FailureKind.unknown
+
+
+def test_access_error_message_avoids_authorization_claims() -> None:
+    message = features.access_error_message(features.MoodleFeature.grades, "accessexception")
+
+    assert "accessexception" in message
+    assert "moodle-mcp doctor" in message
+    assert "Moodle enforces this" in message
+
+
 def test_ensure_feature_available_raises_for_known_missing_function(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
