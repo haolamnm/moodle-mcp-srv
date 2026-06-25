@@ -134,6 +134,9 @@ tempCodeRunnerFile.py
 .factory/
 .claude.json
 
+# Local secret-scan reports
+gitleaks-report.*
+
 # Documentation sites
 /site
 

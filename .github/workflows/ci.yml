@@ -48,8 +48,8 @@ jobs:
       - name: Deptry
         run: uv run deptry .
 
-      - name: Detect secrets
-        run: uv run detect-secrets scan --baseline .secrets.baseline
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v3
 
       - name: Dependency audit
         run: uv run pip-audit
