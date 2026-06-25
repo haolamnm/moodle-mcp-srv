@@ -6,8 +6,10 @@ without env vars set (e.g. for CLI help or inspection).
 
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from moodle_mcp.models.strings import MoodleApiToken, MoodleApiUrl  # noqa: TC001
 
 
 class _EnvironmentSettings(BaseSettings):
@@ -15,8 +17,8 @@ class _EnvironmentSettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=(".env", ".env.local"), extra="ignore")
 
-    api_url: str = Field(default="", validation_alias="MOODLE_API_URL")
-    api_token: str = Field(default="", validation_alias="MOODLE_API_TOKEN")
+    api_url: MoodleApiUrl | None = Field(default=None, validation_alias="MOODLE_API_URL")
+    api_token: MoodleApiToken | None = Field(default=None, validation_alias="MOODLE_API_TOKEN")
 
 
 class Settings:
@@ -32,19 +34,29 @@ class Settings:
         if self._validated:
             return
 
-        env_settings = _EnvironmentSettings()
+        try:
+            env_settings = _EnvironmentSettings()
+        except ValidationError as exc:
+            raise ValueError(f"Moodle MCP configuration invalid: {exc}") from exc
+
+        api_url = env_settings.api_url
+        api_token = env_settings.api_token
+
         errors: list[str] = []
-        if not env_settings.api_url:
+        if api_url is None:
             errors.append("MOODLE_API_URL is not set")
-        if not env_settings.api_token:
+        if api_token is None:
             errors.append("MOODLE_API_TOKEN is not set")
 
         if errors:
             msg = "; ".join(errors)
             raise ValueError(f"Moodle MCP configuration incomplete: {msg}")
 
-        self.api_url = env_settings.api_url
-        self.api_token = env_settings.api_token
+        if api_url is None or api_token is None:
+            raise AssertionError("Settings validation failed to narrow required values.")
+
+        self.api_url = str(api_url)
+        self.api_token = api_token.get_secret_value()
         self._validated = True
 
 

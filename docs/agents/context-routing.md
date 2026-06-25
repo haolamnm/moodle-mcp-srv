@@ -20,6 +20,10 @@ Read the narrowest context that explains the code you are changing.
 | `src/moodle_mcp/moodle/` | `AGENTS.md`, `CONTEXT.md` |
 | `src/moodle_mcp/models/` | `AGENTS.md`, `CONTEXT.md` |
 
+## Focused Notes
+
+- String alias or model validation changes: read [`typed-python.md`](./typed-python.md), then `src/moodle_mcp/models/AGENTS.md`.
+
 ## Rule
 
 Add package-local context only when it prevents repeated mistakes or clarifies a real ownership boundary.

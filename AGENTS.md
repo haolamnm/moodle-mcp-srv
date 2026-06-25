@@ -10,6 +10,16 @@ We're building **moodle-mcp-srv** — an MCP (Model Context Protocol) server tha
 
 Every concept has one name. Synonyms are banned. See [`CONTEXT-MAP.md`](./CONTEXT-MAP.md) to find the relevant context file. If a term is missing, define it in the narrowest applicable `CONTEXT.md`.
 
+## Typed Boundaries
+
+Use typed Python to make Moodle concepts explicit, especially at Pydantic and FastMCP boundaries.
+
+- Use `StrEnum` for finite Moodle protocol values.
+- Use Pydantic constrained aliases from `moodle_mcp.models.strings` for meaningful strings.
+- Use `SecretStr` for tokens and unwrap only at the transport boundary.
+- Do not add `EmailStr` or `pydantic[email]` unless the project gains a real email field.
+- Keep raw Moodle response fields tolerant; validate user-supplied tool inputs more strictly.
+
 ## Code Principles
 
 ### 1. Think Before Coding

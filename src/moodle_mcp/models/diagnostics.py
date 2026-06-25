@@ -7,23 +7,24 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from moodle_mcp.models.courses import SiteInfo  # noqa: TC001
+from moodle_mcp.models.strings import MoodleFeatureName, MoodleFunctionName  # noqa: TC001
 
 FeatureStatus = Literal["available", "missing_function", "unknown"]
 DoctorStatus = Literal["ok", "warning", "error"]
 
 
 class FeatureAvailability(BaseModel):
-    feature: str
+    feature: MoodleFeatureName
     status: FeatureStatus
-    required_functions: list[str]
-    missing_functions: list[str] = Field(default_factory=list)
+    required_functions: list[MoodleFunctionName]
+    missing_functions: list[MoodleFunctionName] = Field(default_factory=list)
     note: str | None = None
 
 
 class ServerCapabilityReport(BaseModel):
     available_functions_known: bool
-    expected_functions: list[str]
-    available_functions: list[str]
+    expected_functions: list[MoodleFunctionName]
+    available_functions: list[MoodleFunctionName]
     features: list[FeatureAvailability]
 
 
@@ -51,4 +52,4 @@ class WriteReceipt(BaseModel):
     would_change: list[str] = Field(default_factory=list)
     changed: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
-    moodle_function: str
+    moodle_function: MoodleFunctionName

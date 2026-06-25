@@ -9,9 +9,11 @@ Use this map when an external dependency, CLI, or Moodle API detail may have cha
 | FastMCP | https://gofastmcp.com/llms.txt | Use linked `.md` pages from that index. |
 | MCP protocol | https://modelcontextprotocol.io/llms-full.txt | https://modelcontextprotocol.io/docs |
 | Pydantic | https://pydantic.dev/llms.txt | https://pydantic.dev/docs/validation/latest/get-started/ |
+| Pydantic Extra Types | https://docs.pydantic.dev/latest/api/pydantic_extra_types_color/ | Use the relevant `pydantic_extra_types` API page for optional validators. |
 | Ruff | https://docs.astral.sh/ruff/llms.txt | Use explicit `index.md` paths from that index. |
 | uv | https://docs.astral.sh/uv/llms.txt | Use explicit `index.md` paths from that index. |
 | ty | https://docs.astral.sh/ty/llms.txt | Use explicit `index.md` paths from that index. |
+| Typer | https://typer.tiangolo.com/ | Use when CLI command behavior or annotations change. |
 | Python 3.13 | https://docs.python.org/3.13/ | https://docs.python.org/3/whatsnew/3.13.html |
 | Moodle Web Services | https://moodledev.io/docs/apis/subsystems/external | Use the target Moodle site's Web services API documentation when available. |
 | Moodle API functions | https://docs.moodle.org/dev/Web_service_API_functions | Prefer the target Moodle site's function reference for exact enabled functions. |

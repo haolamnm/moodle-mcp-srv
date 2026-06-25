@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from moodle_mcp.models.strings import MoodleHtml, MoodleText  # noqa: TC001
+
 
 class ForumDiscussion(BaseModel):
     id: int
-    name: str
-    author: str | None
+    name: MoodleText
+    author: MoodleText | None
     timemodified: int
     postcount: int | None
     pinned: bool | None
@@ -18,14 +20,14 @@ class ForumPost(BaseModel):
     id: int
     timemodified: int
     dry_run: bool = False
-    message: str | None = None
+    message: MoodleText | None = None
 
 
 class AnnouncementPost(BaseModel):
     id: int
-    subject: str
-    message: str | None
-    author: str | None
+    subject: MoodleText
+    message: MoodleHtml | None
+    author: MoodleText | None
     timemodified: int
     courseid: int
-    coursename: str | None
+    coursename: MoodleText | None

@@ -7,7 +7,13 @@ from typing import TYPE_CHECKING
 from fastmcp.exceptions import ToolError
 
 from moodle_mcp import api
-from moodle_mcp.models import AnnouncementPost, ForumDiscussion, WriteReceipt  # noqa: TC001
+from moodle_mcp.models import (  # noqa: TC001
+    AnnouncementPost,
+    ForumDiscussion,
+    NonEmptyHtml,
+    NonEmptyText,
+    WriteReceipt,
+)
 from moodle_mcp.tools.availability import raise_tool_error_for_moodle_failure, require_feature
 
 if TYPE_CHECKING:
@@ -46,10 +52,10 @@ async def get_forum_discussions(
 
 async def post_forum_reply(
     discussionid: int,
-    message: str,
-    subject: str | None = None,
+    message: NonEmptyHtml,
+    subject: NonEmptyText | None = None,
     dry_run: bool = True,
-    reason: str | None = None,
+    reason: NonEmptyText | None = None,
 ) -> WriteReceipt:
     """Preview or post a forum reply.
 
@@ -76,10 +82,10 @@ async def post_forum_reply(
 
 async def create_forum_discussion(
     forumid: int,
-    subject: str,
-    message: str,
+    subject: NonEmptyText,
+    message: NonEmptyHtml,
     dry_run: bool = True,
-    reason: str | None = None,
+    reason: NonEmptyText | None = None,
 ) -> WriteReceipt:
     """Preview or start a new forum discussion.
 

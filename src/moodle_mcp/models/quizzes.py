@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from moodle_mcp.models.strings import MoodleHtml, MoodleText  # noqa: TC001
+
 
 class Quiz(BaseModel):
     id: int
     course: int
-    name: str
+    name: MoodleText
     timeopen: int | None
     timeclose: int | None
     timelimit: int | None
@@ -19,7 +21,7 @@ class Quiz(BaseModel):
 
 class QuizAttempt(BaseModel):
     id: int
-    state: str
+    state: MoodleText
     timestart: int | None
     timefinish: int | None
     sumgrades: float | None
@@ -29,9 +31,9 @@ class QuizAttempt(BaseModel):
 
 class QuizQuestionReview(BaseModel):
     number: int
-    questiontext: str
+    questiontext: MoodleHtml
     youranswer: str
     correctanswer: str
     marks: float | None
     maxmarks: float | None
-    feedback: str | None
+    feedback: MoodleHtml | None

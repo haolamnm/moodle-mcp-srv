@@ -11,6 +11,8 @@ from moodle_mcp.models import (  # noqa: TC001
     Assignment,
     AssignmentFile,
     FeedbackGrade,
+    NonEmptyHtml,
+    NonEmptyText,
     SubmissionStatus,
     WriteReceipt,
 )
@@ -84,10 +86,10 @@ async def get_assignment_files(assignmentid: int) -> list[AssignmentFile]:
 
 async def submit_assignment(
     assignmentid: int,
-    text: str | None = None,
+    text: NonEmptyHtml | None = None,
     draft: bool = False,
     dry_run: bool = True,
-    reason: str | None = None,
+    reason: NonEmptyText | None = None,
 ) -> WriteReceipt:
     """Preview or submit an online-text assignment.
 

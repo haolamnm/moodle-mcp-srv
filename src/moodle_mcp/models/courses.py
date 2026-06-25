@@ -4,25 +4,34 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from moodle_mcp.models.strings import (  # noqa: TC001
+    CourseShortName,
+    MoodleHtml,
+    MoodleModuleName,
+    MoodleText,
+    MoodleUrlString,
+    MoodleUsername,
+)
+
 
 class SiteInfo(BaseModel):
-    sitename: str
-    siteurl: str | None
+    sitename: MoodleText
+    siteurl: MoodleUrlString | None
     userid: int
-    username: str | None
-    firstname: str | None
-    lastname: str | None
-    fullname: str | None
+    username: MoodleUsername | None
+    firstname: MoodleText | None
+    lastname: MoodleText | None
+    fullname: MoodleText | None
     release: str | None
     version: str | None
 
 
 class Course(BaseModel):
     id: int
-    fullname: str
-    shortname: str
+    fullname: MoodleText
+    shortname: CourseShortName
     category: int
-    summary: str
+    summary: MoodleHtml
     startdate: int | None
     enddate: int | None
     progress: float | None
@@ -30,14 +39,14 @@ class Course(BaseModel):
 
 class Module(BaseModel):
     id: int
-    name: str
-    modname: str
-    url: str | None
-    description: str | None
+    name: MoodleText
+    modname: MoodleModuleName
+    url: MoodleUrlString | None
+    description: MoodleHtml | None
 
 
 class CourseSection(BaseModel):
     id: int
-    name: str
-    summary: str | None
+    name: MoodleText
+    summary: MoodleHtml | None
     modules: list[Module]

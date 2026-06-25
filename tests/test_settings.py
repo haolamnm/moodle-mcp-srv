@@ -37,3 +37,17 @@ def test_settings_reports_missing_moodle_environment(
 
     with pytest.raises(ValueError, match="MOODLE_API_URL is not set"):
         settings.validate()
+
+
+def test_settings_reports_invalid_moodle_api_url(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("MOODLE_API_URL", "not a url")
+    monkeypatch.setenv("MOODLE_API_TOKEN", "secret")
+
+    settings = Settings()
+
+    with pytest.raises(ValueError, match="configuration invalid"):
+        settings.validate()
