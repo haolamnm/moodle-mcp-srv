@@ -2,7 +2,21 @@
 name = "moodle-mcp-srv"
 version = "0.1.0"
 description = "Your Moodle dashboard, available to AI."
+readme = "README.md"
 requires-python = ">=3.13"
+license = "Apache-2.0"
+keywords = ["ai", "education", "fastmcp", "lms", "mcp", "moodle"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Pydantic :: 2",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Education",
+    "Topic :: Internet :: WWW/HTTP",
+    "Typing :: Typed",
+]
 dependencies = [
     "aiolimiter>=1.2.1",
     "fastmcp>=3.0",
@@ -19,6 +33,12 @@ dependencies = [
 
 [project.scripts]
 moodle-mcp = "moodle_mcp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/haolamnm/moodle-mcp-srv"
+Issues = "https://github.com/haolamnm/moodle-mcp-srv/issues"
+Security = "https://github.com/haolamnm/moodle-mcp-srv/security/advisories/new"
+Source = "https://github.com/haolamnm/moodle-mcp-srv"
 
 [dependency-groups]
 dev = [
