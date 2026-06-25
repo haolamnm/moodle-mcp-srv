@@ -60,6 +60,7 @@ dev = [
     "dirty-equals>=0.11",
     "deptry>=0.25.1",
     "basedpyright>=1.39.8",
+    "zizmor>=1.26",
 ]
 
 [build-system]

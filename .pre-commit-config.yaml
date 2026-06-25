@@ -49,6 +49,12 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: zizmor
+        name: zizmor
+        entry: uv run zizmor --offline
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+
       - id: pytest
         name: pytest
         entry: uv run pytest
