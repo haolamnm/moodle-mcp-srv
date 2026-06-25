@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest a focused improvement for the Moodle MCP server.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the workflow, not private Moodle data. Keep examples generic.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What student, teacher, or agent workflow is hard today?
+      placeholder: Agents need a safer way to...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should change?
+      placeholder: Add a read-only resource that...
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Tool
+        - Resource
+        - Prompt
+        - Moodle client
+        - Documentation
+        - Testing
+    validations:
+      required: true

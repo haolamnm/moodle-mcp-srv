@@ -1,0 +1,47 @@
+name: Bug report
+description: Report a reproducible bug in the Moodle MCP server.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep Moodle site URLs, tokens, student data, course names, and private submissions out of public issues.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+      placeholder: The tool returned an unexpected Moodle API error when...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Use generic examples when Moodle data is private.
+      placeholder: |
+        1. Run...
+        2. Call tool...
+        3. See...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: The tool should...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include versions only. Do not paste secrets.
+      placeholder: |
+        Python:
+        uv:
+        OS:
+        Moodle version, if known:
+    validations:
+      required: false
