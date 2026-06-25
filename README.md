@@ -127,7 +127,7 @@ uv run lint-imports
 uv run bandit -c pyproject.toml -r src main.py
 uv run deptry .
 uv run pip-audit
-uv run detect-secrets scan --baseline .secrets.baseline
+uv run pre-commit run gitleaks --all-files
 uv run pytest
 MOODLE_MCP_RUN_LIVE_TESTS=1 uv run pytest tests/test_live_moodle_tools.py -q
 uv run pytest -n auto  # optional parallel run
@@ -158,9 +158,13 @@ docs/human/                 Human-facing documentation
 
 See `CHANGELOG.md`.
 
+## Roadmap
+
+See `ROADMAP.md`.
+
 ## Security
 
-See `SECURITY.md`.
+See `SECURITY.md` and `docs/security/threat-model.md`.
 
 ## License
 

@@ -7,6 +7,7 @@ body:
     attributes:
       value: |
         Keep Moodle site URLs, tokens, student data, course names, and private submissions out of public issues.
+        If this report includes token exposure, private Moodle data leakage, or an authorization bypass, use private vulnerability reporting instead.
   - type: textarea
     id: summary
     attributes:
@@ -26,6 +27,93 @@ body:
         3. See...
     validations:
       required: true
+  - type: input
+    id: moodle_version
+    attributes:
+      label: Moodle version
+      description: Use `moodle-mcp ping` or `moodle-mcp doctor` if the site exposes version metadata.
+      placeholder: "4.5.1, 5.0, or unknown"
+    validations:
+      required: true
+  - type: dropdown
+    id: hosting_model
+    attributes:
+      label: Moodle hosting
+      options:
+        - Unknown
+        - Self-hosted
+        - Hosted by institution
+        - MoodleCloud
+        - Other hosted provider
+    validations:
+      required: true
+  - type: dropdown
+    id: user_role
+    attributes:
+      label: Token user role
+      options:
+        - Student
+        - Teacher
+        - Non-editing teacher
+        - Manager
+        - Administrator
+        - Unknown
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: client
+    attributes:
+      label: MCP client
+      options:
+        - Claude Desktop
+        - Claude Code
+        - VS Code
+        - Codex
+        - OpenCode
+        - Gemini CLI
+        - Zed
+        - Factory Droid
+        - Pi Code
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: moodle-mcp doctor output
+      description: Paste `moodle-mcp doctor` output with tokens, private URLs, user names, course names, grades, and submissions removed.
+      render: text
+      placeholder: |
+        Moodle connection: OK
+        Site info: OK
+        Available functions: ...
+        Missing functions: ...
+    validations:
+      required: true
+  - type: dropdown
+    id: ui_works
+    attributes:
+      label: Does the same feature work in the Moodle UI?
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+        - "Not applicable"
+    validations:
+      required: true
+  - type: dropdown
+    id: webservice_function
+    attributes:
+      label: Is the required Moodle Web Service function enabled?
+      description: Check Moodle API documentation or ask the site admin when possible.
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+        - "Not applicable"
+    validations:
+      required: true
   - type: textarea
     id: expected
     attributes:
@@ -42,6 +130,22 @@ body:
         Python:
         uv:
         OS:
-        Moodle version, if known:
     validations:
       required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste only logs with secrets and Moodle private data removed.
+      render: text
+      placeholder: |
+        Error calling tool ...
+    validations:
+      required: false
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Data safety
+      options:
+        - label: I removed Moodle tokens, private URLs, user names, course names, grades, submissions, and other private data.
+          required: true

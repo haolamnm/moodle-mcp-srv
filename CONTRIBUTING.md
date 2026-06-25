@@ -21,10 +21,14 @@ uv run basedpyright
 uv run lint-imports
 uv run bandit -c pyproject.toml -r src main.py
 uv run deptry .
-uv run detect-secrets scan --baseline .secrets.baseline
+uv run pre-commit run gitleaks --all-files
 uv run pip-audit
 uv run pytest -n auto
 ```
+
+## Releases
+
+See `docs/release-checklist.md`.
 
 ## Rules
 

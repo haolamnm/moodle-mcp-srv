@@ -6,9 +6,7 @@ on:
       - "v*.*.*"
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
+permissions: {}
 
 concurrency:
   group: release-${{ github.ref }}
@@ -18,6 +16,10 @@ jobs:
   build:
     name: build / package
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -35,6 +37,11 @@ jobs:
       - name: Build package
         run: uv build
 
+      - name: Generate artifact attestation
+        uses: actions/attest@v4
+        with:
+          subject-path: "dist/*"
+
       - name: Upload distributions
         uses: actions/upload-artifact@v6
         with:
@@ -46,6 +53,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Download distributions
         uses: actions/download-artifact@v7
