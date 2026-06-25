@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from moodle_mcp.api._helpers import get_course_ids, get_enrolled_courses, limit_items
+from moodle_mcp.api._helpers import (
+    get_course_ids,
+    get_enrolled_courses,
+    limit_items,
+    require_write_reason,
+)
 from moodle_mcp.api.coercion import (
     as_int,
     as_object,
@@ -12,7 +17,7 @@ from moodle_mcp.api.coercion import (
     as_str,
     object_list,
 )
-from moodle_mcp.models import CompletionActivity, GradeItem
+from moodle_mcp.models import CompletionActivity, GradeItem, WriteReceipt
 from moodle_mcp.moodle import APIFunction, get_moodle_api_data, resolve_current_user_id
 
 
@@ -62,6 +67,44 @@ async def get_grades(
                 )
             )
     return limit_items(grades, limit)
+
+
+async def mark_activity_complete(
+    cmid: int,
+    completed: bool = True,
+    dry_run: bool = True,
+    reason: str | None = None,
+) -> WriteReceipt:
+    """Manually set the Activity Completion state for a course module."""
+    function = APIFunction.core_completion_update_activity_completion_status_manually
+    if dry_run:
+        return WriteReceipt(
+            dry_run=True,
+            action="mark_activity_complete",
+            target_type="activity",
+            target_id=cmid,
+            would_change=[
+                "Mark this activity complete." if completed else "Mark this activity incomplete."
+            ],
+            warnings=["Dry run only. Pass dry_run=False with a reason to update completion."],
+            moodle_function=function.value,
+        )
+
+    require_write_reason(reason)
+    await get_moodle_api_data(
+        function,
+        {"cmid": str(cmid), "completed": "1" if completed else "0"},
+    )
+    state = "complete" if completed else "incomplete"
+    return WriteReceipt(
+        dry_run=False,
+        action="mark_activity_complete",
+        target_type="activity",
+        target_id=cmid,
+        reason=reason,
+        changed=[f"Marked activity {cmid} {state}."],
+        moodle_function=function.value,
+    )
 
 
 async def get_course_progress(courseid: int, limit: int = 100) -> list[CompletionActivity]:
