@@ -108,6 +108,8 @@ async def submit_assignment(
     try:
         if not dry_run:
             await require_feature(api.MoodleFeature.write_assignment)
+            if not draft:
+                await require_feature(api.MoodleFeature.submit_for_grading)
         return await api.submit_assignment(assignmentid, text, draft, dry_run, reason)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc

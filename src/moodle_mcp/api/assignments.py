@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from moodle_mcp.api._helpers import get_course_ids, limit_items
+from moodle_mcp.api._helpers import get_course_ids, limit_items, require_write_reason
 from moodle_mcp.api.coercion import (
     as_int,
     as_object,
@@ -81,48 +81,63 @@ async def submit_assignment(
     dry_run: bool = True,
     reason: str | None = None,
 ) -> WriteReceipt:
-    """Submit an assignment."""
+    """Save an assignment submission, and submit it for grading unless draft is True.
+
+    With draft=False this saves the online text and then finalizes the submission for
+    grading (mod_assign_submit_for_grading). With draft=True it only saves the online
+    text and leaves the submission editable.
+    """
+    final_function = (
+        APIFunction.mod_assign_save_submission
+        if draft
+        else APIFunction.mod_assign_submit_for_grading
+    )
     if dry_run:
+        intent = (
+            "Save online text as a draft submission."
+            if draft
+            else "Save online text and submit this assignment for grading."
+        )
         return WriteReceipt(
             dry_run=True,
             action="submit_assignment",
             target_type="assignment",
             target_id=assignmentid,
-            would_change=["Submit online text for this assignment."],
+            would_change=[intent],
             warnings=["Dry run only. Pass dry_run=False with a reason to submit."],
-            moodle_function=APIFunction.mod_assign_save_submission.value,
+            moodle_function=final_function.value,
         )
 
-    _require_write_reason(reason)
-    params: dict[str, str] = {"assignmentid": str(assignmentid)}
+    require_write_reason(reason)
 
+    save_params: dict[str, str] = {"assignmentid": str(assignmentid)}
     if text is not None:
-        params["onlinetext"] = text
+        save_params["onlinetext"] = text
+    await get_moodle_api_data(APIFunction.mod_assign_save_submission, save_params)
 
-    params["save"] = "1" if draft else "0"
-
-    data = await get_moodle_api_data(APIFunction.mod_assign_save_submission, params)
-    if not isinstance(data, dict):
+    if draft:
         return WriteReceipt(
             dry_run=False,
             action="submit_assignment",
             target_type="assignment",
             target_id=assignmentid,
             reason=reason,
-            changed=["Moodle accepted the assignment submission request."],
-            warnings=["Moodle returned a non-object response."],
+            changed=["Saved assignment submission draft."],
             moodle_function=APIFunction.mod_assign_save_submission.value,
         )
 
-    action = "Save assignment submission draft." if draft else "Submit assignment."
+    await get_moodle_api_data(
+        APIFunction.mod_assign_submit_for_grading,
+        {"assignmentid": str(assignmentid), "acceptsubmissionstatement": "1"},
+    )
     return WriteReceipt(
         dry_run=False,
         action="submit_assignment",
         target_type="assignment",
         target_id=assignmentid,
         reason=reason,
-        changed=[action],
-        moodle_function=APIFunction.mod_assign_save_submission.value,
+        changed=["Saved online text and submitted the assignment for grading."],
+        moodle_function=APIFunction.mod_assign_submit_for_grading.value,
     )
 
 
@@ -221,8 +236,3 @@ def _extract_feedback_text(feedback_raw: JsonObject) -> str | None:
         for editor in object_list(plugin.get("editorfields")):
             return as_optional_str(editor.get("text"))
     return None
-
-
-def _require_write_reason(reason: str | None) -> None:
-    if reason is None or not reason.strip():
-        raise ValueError("Write tools require a human-readable reason when dry_run is false.")
