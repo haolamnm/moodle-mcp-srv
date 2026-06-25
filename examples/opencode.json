@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "moodle": {
+      "type": "local",
+      "command": ["uvx", "--from", "moodle-mcp-srv", "moodle-mcp"],
+      "environment": {
+        "MOODLE_API_URL": "https://moodle.example.edu/webservice/rest/server.php",
+        "MOODLE_API_TOKEN": "replace-me"
+      },
+      "enabled": true
+    }
+  }
+}

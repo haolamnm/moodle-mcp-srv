@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "moodle": {
+      "command": "uvx",
+      "args": ["--from", "moodle-mcp-srv", "moodle-mcp"],
+      "env": {
+        "MOODLE_API_URL": "https://moodle.example.edu/webservice/rest/server.php",
+        "MOODLE_API_TOKEN": "replace-me"
+      }
+    }
+  }
+}

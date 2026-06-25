@@ -4,6 +4,34 @@ Your Moodle dashboard, available to AI.
 
 FastMCP server exposing Moodle courses, assignments, grades, quizzes, forums, announcements, and calendar events as MCP tools, resources, and prompts.
 
+`moodle-mcp-srv` is an independent project. It is not affiliated with, endorsed by, or sponsored by Moodle Pty Ltd.
+
+## Status
+
+- Project status: pre-1.0 public preview.
+- Python: 3.13+.
+- Moodle compatibility: best effort; site support depends on enabled Moodle Web Service functions.
+- API stability: MCP tool names and response schemas may change before 1.0.
+- Support: GitHub issues for bugs and feature requests; private security reports for vulnerabilities.
+
+## Safety Model
+
+- Moodle remains the source of truth for authorization.
+- Use a least-privilege Moodle web-service token.
+- The server does not need your Moodle username or password.
+- MCP clients can see Moodle data returned by tools and resources.
+- Write tools default to `dry_run=True`; real writes require explicit user confirmation and `reason`.
+- Do not expose HTTP transport publicly without authentication and reverse-proxy controls.
+
+## Non-Goals
+
+- This is not an official Moodle product.
+- This is not a Moodle plugin.
+- This does not bypass Moodle permissions.
+- This does not store Moodle credentials.
+- This does not provide a hosted SaaS.
+- This does not guarantee compatibility with every Moodle plugin or custom Web Service function.
+
 ## Installation
 
 ```sh
@@ -65,6 +93,25 @@ Inspect the local MCP surface:
 uv run moodle-mcp inspect
 ```
 
+Published package usage:
+
+```sh
+uvx --from moodle-mcp-srv moodle-mcp
+```
+
+See `examples/` for MCP client snippets for Claude Desktop, VS Code, Codex, OpenCode, and Factory Droid.
+
+## Tool Surface
+
+The server exposes intent-level tools and read-only `moodle://` resources for Moodle context. Run:
+
+```sh
+uv run moodle-mcp inspect
+uv run moodle-mcp doctor
+```
+
+`doctor` checks configuration, the Moodle connection, Site Info, expected Web Service functions, and feature availability.
+
 ## Development
 
 ```sh
@@ -104,6 +151,18 @@ src/moodle_mcp/config/      Settings and logging
 docs/agents/                Agent-facing documentation
 docs/human/                 Human-facing documentation
 ```
+
+## Release Notes
+
+See `CHANGELOG.md`.
+
+## Security
+
+See `SECURITY.md`.
+
+## License
+
+Apache-2.0. See `LICENSE`.
 
 ## For Agents
 
