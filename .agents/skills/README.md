@@ -12,3 +12,5 @@ Project-native workflows for `moodle-mcp-srv`. Rules in `.agents/rules` are alwa
 - `implement` - execute a scoped plan through tests and checks.
 - `improve-codebase-architecture` - audit architectural friction and propose refactor candidates.
 - `triage` - turn issue-like requests into clear next states and briefs.
+- `ship-pr` - ship current work through a GitHub pull request using `git` and `gh`.
+- `release` - cut a release with changelog, tag, checks, and GitHub release flow.
