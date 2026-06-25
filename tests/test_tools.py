@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 EXPECTED_TOOL_NAMES = {
     "check_submission",
+    "create_calendar_event",
     "create_forum_discussion",
     "dashboard_summary",
     "get_announcements",
@@ -34,6 +35,7 @@ EXPECTED_TOOL_NAMES = {
     "get_quizzes",
     "get_site_info",
     "get_upcoming_deadlines",
+    "mark_activity_complete",
     "post_forum_reply",
     "submit_assignment",
 }
@@ -57,6 +59,7 @@ async def test_mcp_contracts_are_stable() -> None:
     assert sorted(str(resource.uri) for resource in resources) == snapshot(
         [
             "moodle://dashboard/summary",
+            "moodle://deadlines/upcoming",
             "moodle://site/features",
             "moodle://site/profile",
         ]
@@ -67,7 +70,9 @@ async def test_mcp_contracts_are_stable() -> None:
             "moodle://courses/{courseid}/assignments",
             "moodle://courses/{courseid}/content",
             "moodle://courses/{courseid}/overview",
+            "moodle://forums/{courseid}/digest",
             "moodle://grades/{courseid}/schema",
+            "moodle://quizzes/{courseid}/brief",
         ]
     )
     assert sorted(prompt.name for prompt in prompts) == snapshot(
@@ -103,6 +108,7 @@ async def test_submit_assignment_defaults_to_dry_run() -> None:
         (courses, "get_site_info", (), {}),
         (courses, "get_course_content", (10,), {}),
         (courses, "get_calendar_events", (3, 50), {}),
+        (courses, "create_calendar_event", ("Study", 1_000_000, None, True, None), {}),
         (courses, "dashboard_summary", (), {}),
         (assignments, "get_assignments", ([10], 50), {}),
         (assignments, "get_assignment_details", (99,), {}),
@@ -112,6 +118,7 @@ async def test_submit_assignment_defaults_to_dry_run() -> None:
         (assignments, "get_feedback", (99,), {}),
         (grades, "get_grades", ([10], 100), {}),
         (grades, "get_course_progress", (10, 100), {}),
+        (grades, "mark_activity_complete", (5, True, True, None), {}),
         (grades, "get_upcoming_deadlines", (7, 50), {}),
         (quizzes, "get_quizzes", ([10], 50), {}),
         (quizzes, "get_quiz_attempts", (55, 20), {}),
