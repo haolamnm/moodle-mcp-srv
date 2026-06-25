@@ -9,6 +9,7 @@ from fastmcp import Client
 import httpx
 import pytest
 
+from moodle_mcp.api import reset_available_functions_cache
 from moodle_mcp.moodle import client as moodle_client, reset_current_user_cache
 from moodle_mcp.server import create_server
 
@@ -102,6 +103,7 @@ def _site_info_response(form: Mapping[str, str]) -> object:
         "fullname": "Ada Lovelace",
         "release": "5.0.1",
         "version": "2025041401",
+        "functions": [{"name": name} for name in _MOODLE_FUNCTIONS],
     }
 
 
@@ -363,15 +365,25 @@ _MOODLE_RESPONSES: dict[str, Callable[[Mapping[str, str]], object]] = {
     "mod_forum_get_forum_discussions": _forum_discussions_response,
 }
 
+_MOODLE_FUNCTIONS = sorted(
+    {
+        *_MOODLE_RESPONSES,
+        "mod_assign_save_submission",
+        "mod_forum_add_discussion_post",
+        "mod_forum_add_discussion",
+    }
+)
+
 
 @pytest.mark.asyncio
-async def test_mcp_tools_and_resources_against_lightweight_mock_moodle(
+async def test_mcp_tools_and_resources_against_lightweight_mock_moodle(  # noqa: PLR0914, PLR0915
     httpx_mock: HTTPXMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     requests = _install_mock_moodle(httpx_mock)
     monkeypatch.setattr(moodle_client, "_get_config", lambda: (MOODLE_URL, MOODLE_TOKEN))
     reset_current_user_cache()
+    reset_available_functions_cache()
 
     async with Client(create_server()) as client:
         site_info = await _call_ok(client, "get_site_info", {})
@@ -436,12 +448,26 @@ async def test_mcp_tools_and_resources_against_lightweight_mock_moodle(
         )
 
         course_resource = await client.read_resource(f"moodle://courses/{course_id}/content")
+        course_overview_resource = await client.read_resource(
+            f"moodle://courses/{course_id}/overview"
+        )
+        course_assignments_resource = await client.read_resource(
+            f"moodle://courses/{course_id}/assignments"
+        )
+        grade_schema_resource = await client.read_resource(f"moodle://grades/{course_id}/schema")
         assignment_resource = await client.read_resource(
             f"moodle://assignments/{assignment_id}/brief"
         )
+        site_profile_resource = await client.read_resource("moodle://site/profile")
+        site_features_resource = await client.read_resource("moodle://site/features")
 
     assert _resource_text(course_resource).startswith("[")
+    assert _resource_text(course_overview_resource).startswith("{")
+    assert _resource_text(course_assignments_resource).startswith("[")
+    assert _resource_text(grade_schema_resource).startswith("[")
     assert _resource_text(assignment_resource).startswith("{")
+    assert _resource_text(site_profile_resource).startswith("{")
+    assert _resource_text(site_features_resource).startswith("{")
     assert {request["wsfunction"] for request in requests} >= {
         "core_webservice_get_site_info",
         "core_enrol_get_users_courses",

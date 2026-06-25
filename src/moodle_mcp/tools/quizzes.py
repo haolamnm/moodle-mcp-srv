@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from moodle_mcp import api
 from moodle_mcp.models import Quiz, QuizAttempt, QuizQuestionReview  # noqa: TC001
+from moodle_mcp.tools.availability import raise_tool_error_for_moodle_failure, require_feature
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -29,7 +30,12 @@ async def get_quizzes(
     Returns:
         Quizzes with name, open/close times, time limit, max grade.
     """
-    return await api.get_quizzes(course_ids, limit)
+    feature = api.MoodleFeature.quizzes
+    await require_feature(feature)
+    try:
+        return await api.get_quizzes(course_ids, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_quiz_attempts(quizid: int, limit: int = 20) -> list[QuizAttempt]:
@@ -40,7 +46,12 @@ async def get_quiz_attempts(quizid: int, limit: int = 20) -> list[QuizAttempt]:
     Returns:
         Attempts with id, state, timestart, timefinish, grade.
     """
-    return await api.get_quiz_attempts(quizid, limit)
+    feature = api.MoodleFeature.quiz_attempts
+    await require_feature(feature)
+    try:
+        return await api.get_quiz_attempts(quizid, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_quiz_attempt_review(
@@ -54,4 +65,9 @@ async def get_quiz_attempt_review(
     Returns:
         Each question with number, text, your answer, correct answer, marks, feedback.
     """
-    return await api.get_quiz_attempt_review(attemptid, limit)
+    feature = api.MoodleFeature.quiz_review
+    await require_feature(feature)
+    try:
+        return await api.get_quiz_attempt_review(attemptid, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)

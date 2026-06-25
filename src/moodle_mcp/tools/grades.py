@@ -8,6 +8,7 @@ from fastmcp import Context  # noqa: TC002
 
 from moodle_mcp import api
 from moodle_mcp.models import CompletionActivity, Deadline, GradeItem  # noqa: TC001
+from moodle_mcp.tools.availability import raise_tool_error_for_moodle_failure, require_feature
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -38,7 +39,12 @@ async def get_grades(
     if ctx is not None:
         await ctx.info("Fetching Moodle grade items")
         await ctx.report_progress(0.2, total=1.0, message="Fetching grades")
-    return await api.get_grades(course_ids, limit)
+    feature = api.MoodleFeature.grades
+    await require_feature(feature)
+    try:
+        return await api.get_grades(course_ids, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_course_progress(courseid: int, limit: int = 100) -> list[CompletionActivity]:
@@ -49,7 +55,12 @@ async def get_course_progress(courseid: int, limit: int = 100) -> list[Completio
     Returns:
         Activities with name, type, completion status, timecompleted.
     """
-    return await api.get_course_progress(courseid, limit)
+    feature = api.MoodleFeature.progress
+    await require_feature(feature)
+    try:
+        return await api.get_course_progress(courseid, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_upcoming_deadlines(daysahead: int = 7, limit: int = 50) -> list[Deadline]:
@@ -60,4 +71,9 @@ async def get_upcoming_deadlines(daysahead: int = 7, limit: int = 50) -> list[De
     Returns:
         Sorted deadlines with type, name, course, duedate, daysremaining.
     """
-    return await api.get_upcoming_deadlines(daysahead, limit)
+    feature = api.MoodleFeature.dashboard
+    await require_feature(feature)
+    try:
+        return await api.get_upcoming_deadlines(daysahead, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)

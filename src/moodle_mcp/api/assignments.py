@@ -17,8 +17,8 @@ from moodle_mcp.models import (
     AssignmentFile,
     FeedbackGrade,
     JsonObject,
-    SubmissionReceipt,
     SubmissionStatus,
+    WriteReceipt,
 )
 from moodle_mcp.moodle import APIFunction, format_array_params, get_moodle_api_data
 
@@ -80,14 +80,17 @@ async def submit_assignment(
     draft: bool = False,
     dry_run: bool = True,
     reason: str | None = None,
-) -> SubmissionReceipt:
+) -> WriteReceipt:
     """Submit an assignment."""
     if dry_run:
-        return SubmissionReceipt(
-            status="preview",
-            assignmentid=assignmentid,
+        return WriteReceipt(
             dry_run=True,
-            message="Dry run only. Pass dry_run=False with a reason to submit.",
+            action="submit_assignment",
+            target_type="assignment",
+            target_id=assignmentid,
+            would_change=["Submit online text for this assignment."],
+            warnings=["Dry run only. Pass dry_run=False with a reason to submit."],
+            moodle_function=APIFunction.mod_assign_save_submission.value,
         )
 
     _require_write_reason(reason)
@@ -100,15 +103,26 @@ async def submit_assignment(
 
     data = await get_moodle_api_data(APIFunction.mod_assign_save_submission, params)
     if not isinstance(data, dict):
-        return SubmissionReceipt(
-            status="unknown",
-            assignmentid=assignmentid,
-            data=str(data),
+        return WriteReceipt(
+            dry_run=False,
+            action="submit_assignment",
+            target_type="assignment",
+            target_id=assignmentid,
+            reason=reason,
+            changed=["Moodle accepted the assignment submission request."],
+            warnings=["Moodle returned a non-object response."],
+            moodle_function=APIFunction.mod_assign_save_submission.value,
         )
 
-    return SubmissionReceipt(
-        status="saved" if draft else "submitted",
-        assignmentid=assignmentid,
+    action = "Save assignment submission draft." if draft else "Submit assignment."
+    return WriteReceipt(
+        dry_run=False,
+        action="submit_assignment",
+        target_type="assignment",
+        target_id=assignmentid,
+        reason=reason,
+        changed=[action],
+        moodle_function=APIFunction.mod_assign_save_submission.value,
     )
 
 

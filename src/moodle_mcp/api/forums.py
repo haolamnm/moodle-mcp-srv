@@ -11,7 +11,7 @@ from moodle_mcp.api.coercion import (
     as_str,
     object_list,
 )
-from moodle_mcp.models import AnnouncementPost, ForumDiscussion, ForumPost, JsonObject
+from moodle_mcp.models import AnnouncementPost, ForumDiscussion, JsonObject, WriteReceipt
 from moodle_mcp.moodle import APIFunction, format_array_params, get_moodle_api_data
 
 
@@ -46,14 +46,17 @@ async def post_forum_reply(
     subject: str | None = None,
     dry_run: bool = True,
     reason: str | None = None,
-) -> ForumPost:
+) -> WriteReceipt:
     """Post a reply to a discussion thread."""
     if dry_run:
-        return ForumPost(
-            id=0,
-            timemodified=0,
+        return WriteReceipt(
             dry_run=True,
-            message="Dry run only. Pass dry_run=False with a reason to post this reply.",
+            action="post_forum_reply",
+            target_type="forum_discussion",
+            target_id=discussionid,
+            would_change=["Post a reply to this forum discussion."],
+            warnings=["Dry run only. Pass dry_run=False with a reason to post this reply."],
+            moodle_function=APIFunction.mod_forum_add_discussion_post.value,
         )
 
     _require_write_reason(reason)
@@ -65,11 +68,26 @@ async def post_forum_reply(
     }
     data = await get_moodle_api_data(APIFunction.mod_forum_add_discussion_post, params)
     if isinstance(data, dict):
-        return ForumPost(
-            id=as_int(data.get("postid")),
-            timemodified=as_int(data.get("timemodified")),
+        post_id = as_int(data.get("postid"))
+        return WriteReceipt(
+            dry_run=False,
+            action="post_forum_reply",
+            target_type="forum_discussion",
+            target_id=discussionid,
+            reason=reason,
+            changed=[f"Created forum post {post_id}."],
+            moodle_function=APIFunction.mod_forum_add_discussion_post.value,
         )
-    return ForumPost(id=0, timemodified=0)
+    return WriteReceipt(
+        dry_run=False,
+        action="post_forum_reply",
+        target_type="forum_discussion",
+        target_id=discussionid,
+        reason=reason,
+        changed=["Moodle accepted the forum reply request."],
+        warnings=["Moodle returned a non-object response."],
+        moodle_function=APIFunction.mod_forum_add_discussion_post.value,
+    )
 
 
 async def create_forum_discussion(
@@ -78,14 +96,17 @@ async def create_forum_discussion(
     message: str,
     dry_run: bool = True,
     reason: str | None = None,
-) -> ForumPost:
+) -> WriteReceipt:
     """Start a new discussion thread in a forum."""
     if dry_run:
-        return ForumPost(
-            id=0,
-            timemodified=0,
+        return WriteReceipt(
             dry_run=True,
-            message="Dry run only. Pass dry_run=False with a reason to create this discussion.",
+            action="create_forum_discussion",
+            target_type="forum",
+            target_id=forumid,
+            would_change=["Create a new forum discussion."],
+            warnings=["Dry run only. Pass dry_run=False with a reason to create this discussion."],
+            moodle_function=APIFunction.mod_forum_add_discussion.value,
         )
 
     _require_write_reason(reason)
@@ -97,11 +118,26 @@ async def create_forum_discussion(
     }
     data = await get_moodle_api_data(APIFunction.mod_forum_add_discussion, params)
     if isinstance(data, dict):
-        return ForumPost(
-            id=as_int(data.get("discussionid")),
-            timemodified=as_int(data.get("timemodified")),
+        discussion_id = as_int(data.get("discussionid"))
+        return WriteReceipt(
+            dry_run=False,
+            action="create_forum_discussion",
+            target_type="forum",
+            target_id=forumid,
+            reason=reason,
+            changed=[f"Created forum discussion {discussion_id}."],
+            moodle_function=APIFunction.mod_forum_add_discussion.value,
         )
-    return ForumPost(id=0, timemodified=0)
+    return WriteReceipt(
+        dry_run=False,
+        action="create_forum_discussion",
+        target_type="forum",
+        target_id=forumid,
+        reason=reason,
+        changed=["Moodle accepted the forum discussion request."],
+        warnings=["Moodle returned a non-object response."],
+        moodle_function=APIFunction.mod_forum_add_discussion.value,
+    )
 
 
 async def get_announcements(

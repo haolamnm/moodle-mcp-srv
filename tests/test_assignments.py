@@ -229,8 +229,9 @@ def test_get_feedback_uses_assignid_param(monkeypatch: pytest.MonkeyPatch) -> No
 def test_submit_assignment_defaults_to_dry_run() -> None:
     receipt = asyncio.run(assignments.submit_assignment(99, "Done"))
 
-    assert receipt.status == "preview"
     assert receipt.dry_run is True
+    assert receipt.action == "submit_assignment"
+    assert receipt.target_id == 99
 
 
 def test_submit_assignment_requires_reason_when_not_dry_run() -> None:
@@ -259,4 +260,4 @@ def test_submit_assignment_calls_moodle_when_confirmed(monkeypatch: pytest.Monke
     )
 
     assert captured_params == {"assignmentid": "99", "onlinetext": "Done", "save": "1"}
-    assert receipt.status == "saved"
+    assert receipt.changed == ["Save assignment submission draft."]

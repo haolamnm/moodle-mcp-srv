@@ -107,9 +107,11 @@ def test_forum_write_tools_default_to_dry_run() -> None:
     discussion = asyncio.run(forums.create_forum_discussion(2, "Subject", "Message"))
 
     assert reply.dry_run is True
-    assert reply.id == 0
+    assert reply.action == "post_forum_reply"
+    assert reply.target_id == 1
     assert discussion.dry_run is True
-    assert discussion.id == 0
+    assert discussion.action == "create_forum_discussion"
+    assert discussion.target_id == 2
 
 
 def test_forum_write_tools_require_reason_when_not_dry_run() -> None:
@@ -164,5 +166,5 @@ def test_forum_write_tools_call_moodle_when_confirmed(monkeypatch: pytest.Monkey
             },
         ),
     ]
-    assert reply.id == 11
-    assert discussion.id == 12
+    assert reply.changed == ["Created forum post 11."]
+    assert discussion.changed == ["Created forum discussion 12."]

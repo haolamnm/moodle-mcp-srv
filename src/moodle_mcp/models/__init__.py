@@ -12,6 +12,13 @@ from moodle_mcp.models.assignments import (
 from moodle_mcp.models.calendar import CalendarEvent, Deadline
 from moodle_mcp.models.courses import Course, CourseSection, Module, SiteInfo
 from moodle_mcp.models.dashboard import DashboardGrade, DashboardSummary, RecentActivity
+from moodle_mcp.models.diagnostics import (
+    DoctorCheck,
+    DoctorReport,
+    FeatureAvailability,
+    ServerCapabilityReport,
+    WriteReceipt,
+)
 from moodle_mcp.models.forums import AnnouncementPost, ForumDiscussion, ForumPost
 from moodle_mcp.models.grades import CompletionActivity, GradeItem
 from moodle_mcp.models.json import JsonArray, JsonObject, JsonValue, MoodleResponse
@@ -28,6 +35,9 @@ __all__ = [
     "DashboardGrade",
     "DashboardSummary",
     "Deadline",
+    "DoctorCheck",
+    "DoctorReport",
+    "FeatureAvailability",
     "FeedbackGrade",
     "ForumDiscussion",
     "ForumPost",
@@ -41,7 +51,9 @@ __all__ = [
     "QuizAttempt",
     "QuizQuestionReview",
     "RecentActivity",
+    "ServerCapabilityReport",
     "SiteInfo",
     "SubmissionReceipt",
     "SubmissionStatus",
+    "WriteReceipt",
 ]

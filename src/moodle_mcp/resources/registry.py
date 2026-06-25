@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from moodle_mcp.resources import assignments, courses
+from moodle_mcp.resources import assignments, courses, site
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -12,5 +12,6 @@ if TYPE_CHECKING:
 
 def register_resources(mcp: FastMCP) -> None:
     """Register all read-only Moodle MCP resources."""
+    site.register(mcp)
     courses.register(mcp)
     assignments.register(mcp)

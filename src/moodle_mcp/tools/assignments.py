@@ -11,9 +11,10 @@ from moodle_mcp.models import (  # noqa: TC001
     Assignment,
     AssignmentFile,
     FeedbackGrade,
-    SubmissionReceipt,
     SubmissionStatus,
+    WriteReceipt,
 )
+from moodle_mcp.tools.availability import raise_tool_error_for_moodle_failure, require_feature
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -41,7 +42,12 @@ async def get_assignments(
     Returns:
         Assignments with id, name, duedate, cutoffdate, grade, intro.
     """
-    return await api.get_assignments(course_ids, limit)
+    feature = api.MoodleFeature.assignments
+    await require_feature(feature)
+    try:
+        return await api.get_assignments(course_ids, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_assignment_details(assignmentid: int) -> Assignment | None:
@@ -52,7 +58,12 @@ async def get_assignment_details(assignmentid: int) -> Assignment | None:
     Returns:
         Full assignment details including description, submission type, grade.
     """
-    return await api.get_assignment_details(assignmentid)
+    feature = api.MoodleFeature.assignments
+    await require_feature(feature)
+    try:
+        return await api.get_assignment_details(assignmentid)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_assignment_files(assignmentid: int) -> list[AssignmentFile]:
@@ -63,7 +74,12 @@ async def get_assignment_files(assignmentid: int) -> list[AssignmentFile]:
     Returns:
         Attached files with filename, size, mimetype, download URL.
     """
-    return await api.get_assignment_files(assignmentid)
+    feature = api.MoodleFeature.assignments
+    await require_feature(feature)
+    try:
+        return await api.get_assignment_files(assignmentid)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def submit_assignment(
@@ -72,7 +88,7 @@ async def submit_assignment(
     draft: bool = False,
     dry_run: bool = True,
     reason: str | None = None,
-) -> SubmissionReceipt:
+) -> WriteReceipt:
     """Preview or submit an online-text assignment.
 
     Use dry_run=True to inspect the intended submission without changing Moodle.
@@ -88,9 +104,13 @@ async def submit_assignment(
         Submission receipt with status.
     """
     try:
+        if not dry_run:
+            await require_feature(api.MoodleFeature.write_assignment)
         return await api.submit_assignment(assignmentid, text, draft, dry_run, reason)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, api.MoodleFeature.write_assignment)
 
 
 async def check_submission(assignmentid: int) -> SubmissionStatus:
@@ -101,7 +121,12 @@ async def check_submission(assignmentid: int) -> SubmissionStatus:
     Returns:
         Status (submitted/draft/noattempt), timemodified, grading status.
     """
-    return await api.check_submission(assignmentid)
+    feature = api.MoodleFeature.assignment_submission
+    await require_feature(feature)
+    try:
+        return await api.check_submission(assignmentid)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_feedback(assignmentid: int) -> FeedbackGrade:
@@ -112,4 +137,9 @@ async def get_feedback(assignmentid: int) -> FeedbackGrade:
     Returns:
         Grade, feedback text, grader info, timemodified.
     """
-    return await api.get_feedback(assignmentid)
+    feature = api.MoodleFeature.assignment_submission
+    await require_feature(feature)
+    try:
+        return await api.get_feedback(assignmentid)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)

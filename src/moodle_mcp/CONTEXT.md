@@ -55,3 +55,7 @@ _Avoid_: Schedule item, reminder
 **Dashboard Summary**:
 Aggregated morning brief: overdue items, due today/week, new grades.
 _Avoid_: Digest, homepage, overview
+
+**Moodle Feature**:
+An app-level capability mapped to required Moodle Web Service Function Names for diagnostics and friendly availability errors.
+_Avoid_: Permission, capability, authorization

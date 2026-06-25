@@ -54,11 +54,20 @@ async def test_mcp_contracts_are_stable() -> None:
         prompts = await client.list_prompts()
 
     assert sorted(tool.name for tool in tools) == snapshot(sorted(EXPECTED_TOOL_NAMES))
-    assert [str(resource.uri) for resource in resources] == snapshot(["moodle://dashboard/summary"])
+    assert sorted(str(resource.uri) for resource in resources) == snapshot(
+        [
+            "moodle://dashboard/summary",
+            "moodle://site/features",
+            "moodle://site/profile",
+        ]
+    )
     assert sorted(template.uriTemplate for template in resource_templates) == snapshot(
         [
             "moodle://assignments/{assignmentid}/brief",
+            "moodle://courses/{courseid}/assignments",
             "moodle://courses/{courseid}/content",
+            "moodle://courses/{courseid}/overview",
+            "moodle://grades/{courseid}/schema",
         ]
     )
     assert sorted(prompt.name for prompt in prompts) == snapshot(
@@ -80,10 +89,10 @@ async def test_submit_assignment_defaults_to_dry_run() -> None:
 
     assert result.is_error is False
     assert result.structured_content == IsPartialDict(
-        status="preview",
-        assignmentid=99,
         dry_run=True,
-        message=IsStr(),
+        action="submit_assignment",
+        target_id=99,
+        warnings=[IsStr()],
     )
 
 
@@ -128,6 +137,13 @@ def test_tool_wrappers_delegate_to_api(
         return "sentinel"
 
     monkeypatch.setattr(module.api, name, fake_api_call)
+    if hasattr(module, "require_feature"):
+
+        async def fake_require_feature(feature: object) -> None:
+            await asyncio.sleep(0)
+            _ = feature
+
+        monkeypatch.setattr(module, "require_feature", fake_require_feature)
 
     result = asyncio.run(getattr(module, name)(*args, **kwargs))
 

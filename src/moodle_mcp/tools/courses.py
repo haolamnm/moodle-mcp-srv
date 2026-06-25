@@ -14,6 +14,7 @@ from moodle_mcp.models import (  # noqa: TC001
     DashboardSummary,
     SiteInfo,
 )
+from moodle_mcp.tools.availability import raise_tool_error_for_moodle_failure, require_feature
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -42,7 +43,12 @@ async def get_my_courses() -> list[Course]:
     First thing to run: discovers what semester courses you're taking.
     Resolves the user from the API token automatically.
     """
-    return await api.get_my_courses()
+    feature = api.MoodleFeature.courses
+    await require_feature(feature)
+    try:
+        return await api.get_my_courses()
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_course_content(courseid: int) -> list[CourseSection]:
@@ -53,7 +59,12 @@ async def get_course_content(courseid: int) -> list[CourseSection]:
     Returns:
         Sections with modules (name, modname, url, description).
     """
-    return await api.get_course_content(courseid)
+    feature = api.MoodleFeature.course_content
+    await require_feature(feature)
+    try:
+        return await api.get_course_content(courseid)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def get_calendar_events(
@@ -68,7 +79,12 @@ async def get_calendar_events(
     Returns:
         Events with type, name, description, timestart, course context.
     """
-    return await api.get_calendar_events(daysahead, limit)
+    feature = api.MoodleFeature.calendar
+    await require_feature(feature)
+    try:
+        return await api.get_calendar_events(daysahead, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def dashboard_summary(ctx: Context | None = None) -> DashboardSummary:
@@ -79,4 +95,9 @@ async def dashboard_summary(ctx: Context | None = None) -> DashboardSummary:
     if ctx is not None:
         await ctx.info("Building Moodle dashboard summary")
         await ctx.report_progress(0.1, total=1.0, message="Fetching courses")
-    return await api.dashboard_summary()
+    feature = api.MoodleFeature.dashboard
+    await require_feature(feature)
+    try:
+        return await api.dashboard_summary()
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)

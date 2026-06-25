@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 from fastmcp.exceptions import ToolError
 
 from moodle_mcp import api
-from moodle_mcp.models import AnnouncementPost, ForumDiscussion, ForumPost  # noqa: TC001
+from moodle_mcp.models import AnnouncementPost, ForumDiscussion, WriteReceipt  # noqa: TC001
+from moodle_mcp.tools.availability import raise_tool_error_for_moodle_failure, require_feature
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -35,7 +36,12 @@ async def get_forum_discussions(
     Returns:
         Discussions with name, author, timemodified, post count.
     """
-    return await api.get_forum_discussions(courseid, forumid, limit)
+    feature = api.MoodleFeature.forums
+    await require_feature(feature)
+    try:
+        return await api.get_forum_discussions(courseid, forumid, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
 
 
 async def post_forum_reply(
@@ -44,7 +50,7 @@ async def post_forum_reply(
     subject: str | None = None,
     dry_run: bool = True,
     reason: str | None = None,
-) -> ForumPost:
+) -> WriteReceipt:
     """Preview or post a forum reply.
 
     Use dry_run=True to inspect the intended reply without changing Moodle. Use dry_run=False only after the user explicitly confirms the post and provides reason.
@@ -59,9 +65,13 @@ async def post_forum_reply(
         Post id and timestamp.
     """
     try:
+        if not dry_run:
+            await require_feature(api.MoodleFeature.write_forum)
         return await api.post_forum_reply(discussionid, message, subject, dry_run, reason)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, api.MoodleFeature.write_forum)
 
 
 async def create_forum_discussion(
@@ -70,7 +80,7 @@ async def create_forum_discussion(
     message: str,
     dry_run: bool = True,
     reason: str | None = None,
-) -> ForumPost:
+) -> WriteReceipt:
     """Preview or start a new forum discussion.
 
     Use dry_run=True to inspect the intended discussion without changing Moodle. Use dry_run=False only after the user explicitly confirms the post and provides reason.
@@ -85,9 +95,13 @@ async def create_forum_discussion(
         Discussion id and timestamp.
     """
     try:
+        if not dry_run:
+            await require_feature(api.MoodleFeature.write_forum)
         return await api.create_forum_discussion(forumid, subject, message, dry_run, reason)
     except ValueError as exc:
         raise ToolError(str(exc)) from exc
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, api.MoodleFeature.write_forum)
 
 
 async def get_announcements(
@@ -102,4 +116,9 @@ async def get_announcements(
     Returns:
         Announcements with subject, message, author, timemodified.
     """
-    return await api.get_announcements(course_ids, limit)
+    feature = api.MoodleFeature.announcements
+    await require_feature(feature)
+    try:
+        return await api.get_announcements(course_ids, limit)
+    except api.MoodleAPIError as exc:
+        raise_tool_error_for_moodle_failure(exc, feature)
