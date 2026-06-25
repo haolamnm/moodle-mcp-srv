@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This folder owns GitHub-facing project metadata: workflows, issue forms, and pull request guidance.
+This folder owns GitHub-facing project metadata: workflows, issue forms, pull request guidance, and release hygiene.
 
 ## Conventions
 
@@ -14,6 +14,7 @@ This folder owns GitHub-facing project metadata: workflows, issue forms, and pul
 - PR workflows must not require repository secrets.
 - Commit convention enforcement uses Commitizen.
 - Full quality gates should stay consistent with local developer commands.
+- Release publishing uses PyPI Trusted Publishing, not long-lived tokens.
 
 ## Testing
 
@@ -22,5 +23,4 @@ This folder owns GitHub-facing project metadata: workflows, issue forms, and pul
 
 ## Out Of Scope
 
-- Release automation and package publishing.
 - Live Moodle credentials or environment-specific CI secrets.
