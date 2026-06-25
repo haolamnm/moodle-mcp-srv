@@ -49,6 +49,12 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: zizmor
+        name: zizmor
+        entry: uv run zizmor --offline
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+
       - id: pytest
         name: pytest
         entry: uv run pytest
@@ -65,3 +71,8 @@ repos:
     rev: v8.30.1
     hooks:
       - id: gitleaks
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint

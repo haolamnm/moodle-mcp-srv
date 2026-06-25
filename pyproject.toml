@@ -60,6 +60,7 @@ dev = [
     "dirty-equals>=0.11",
     "deptry>=0.25.1",
     "basedpyright>=1.39.8",
+    "zizmor>=1.26",
 ]
 
 [build-system]
@@ -204,7 +205,11 @@ addopts = [
     "--cov-report=term-missing",
 ]
 
+[tool.coverage.run]
+branch = true
+
 [tool.coverage.report]
+fail_under = 88
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",

@@ -1,0 +1,13 @@
+# zizmor configuration — https://docs.zizmor.sh/configuration/
+#
+# ref-version-mismatch is ignored for the workflows below because they pin
+# actions (github/codeql-action, actions/attest) to the head SHA of a moving
+# major tag (e.g. v4), which is the most specific tag those projects publish.
+# pinact owns comment<->SHA verification for our pins; zizmor focuses on the
+# security audits.
+rules:
+  ref-version-mismatch:
+    ignore:
+      - codeql.yml
+      - release.yml
+      - scorecard.yml
