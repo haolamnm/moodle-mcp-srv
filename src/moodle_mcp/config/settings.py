@@ -2,6 +2,7 @@
 
 Validation is deferred to first use so the module can be imported
 without env vars set (e.g. for CLI help or inspection).
+Values can come from OS environment variables, `.env.local`, or `.env`.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from moodle_mcp.models.strings import MoodleApiToken, MoodleApiUrl  # noqa: TC00
 
 
 class _EnvironmentSettings(BaseSettings):
-    """Raw environment settings loaded by Pydantic."""
+    """Raw settings loaded from OS environment variables and dotenv files."""
 
     model_config = SettingsConfigDict(env_file=(".env", ".env.local"), extra="ignore")
 

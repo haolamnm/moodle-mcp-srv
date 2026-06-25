@@ -13,7 +13,7 @@ Use this map when an external dependency, CLI, or Moodle API detail may have cha
 | Ruff | https://docs.astral.sh/ruff/llms.txt | Use explicit `index.md` paths from that index. |
 | uv | https://docs.astral.sh/uv/llms.txt | Use explicit `index.md` paths from that index. |
 | ty | https://docs.astral.sh/ty/llms.txt | Use explicit `index.md` paths from that index. |
-| Typer | https://typer.tiangolo.com/ | Use when CLI command behavior or annotations change. |
+| Typer | https://typer.tiangolo.com/ | No `llms.txt` found on 2026-06-25; use HTML docs when CLI behavior or annotations change. |
 | Python 3.13 | https://docs.python.org/3.13/ | https://docs.python.org/3/whatsnew/3.13.html |
 | Moodle Web Services | https://moodledev.io/docs/apis/subsystems/external | Use the target Moodle site's Web services API documentation when available. |
 | Moodle API functions | https://docs.moodle.org/dev/Web_service_API_functions | Prefer the target Moodle site's function reference for exact enabled functions. |

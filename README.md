@@ -11,12 +11,14 @@ uv sync
 cp .env.example .env
 ```
 
-Set these in `.env` or `.env.local`:
+Set these as OS environment variables, or put them in `.env` / `.env.local`:
 
 ```sh
 MOODLE_API_URL=https://moodle.example.edu/webservice/rest/server.php
 MOODLE_API_TOKEN=your_token
 ```
+
+Precedence is OS environment variables, then `.env.local`, then `.env`.
 
 Replace `moodle.example.edu` with your Moodle portal host. If your portal is `https://moodle.example.edu`, the API URL is usually:
 
@@ -32,7 +34,7 @@ https://moodle.example.edu/user/managetoken.php
 
 Some Moodle sites hide or disable self-service tokens. In that case, ask the Moodle admin for a web-service token for your account.
 
-Quick connection check after setting `.env.local`:
+Quick connection check after setting credentials:
 
 ```sh
 uv run moodle-mcp ping
