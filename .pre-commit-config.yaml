@@ -1,0 +1,68 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+
+      - id: ty-check
+        name: ty check
+        entry: uv run ty check
+        language: system
+        pass_filenames: false
+
+      - id: basedpyright
+        name: basedpyright
+        entry: uv run basedpyright
+        language: system
+        pass_filenames: false
+
+      - id: import-linter
+        name: import-linter
+        entry: uv run lint-imports
+        language: system
+        pass_filenames: false
+
+      - id: bandit
+        name: bandit
+        entry: uv run bandit -c pyproject.toml -r src main.py
+        language: system
+        pass_filenames: false
+
+      - id: deptry
+        name: deptry
+        entry: uv run deptry .
+        language: system
+        pass_filenames: false
+
+      - id: pip-audit
+        name: pip-audit
+        entry: uv run pip-audit
+        language: system
+        pass_filenames: false
+
+      - id: detect-secrets
+        name: detect-secrets
+        entry: uv run detect-secrets scan --baseline .secrets.baseline
+        language: system
+        pass_filenames: false
+
+      - id: pytest
+        name: pytest
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+
+      - id: commitlint
+        name: commitlint
+        entry: uv run cz check --allow-abort --commit-msg-file
+        language: system
+        stages: [commit-msg]

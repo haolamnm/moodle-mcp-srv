@@ -1,0 +1,15 @@
+{
+    "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
+    "source": {
+        "path": "src/moodle_mcp/server.py",
+        "entrypoint": "mcp"
+    },
+    "deployment": {
+        "transport": "stdio",
+        "log_level": "INFO",
+        "env": {
+            "MOODLE_API_URL": "${MOODLE_API_URL}",
+            "MOODLE_API_TOKEN": "${MOODLE_API_TOKEN}"
+        }
+    }
+}

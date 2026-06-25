@@ -1,0 +1,260 @@
+[project]
+name = "moodle-mcp-srv"
+version = "0.1.0"
+description = "Your Moodle dashboard, available to AI."
+requires-python = ">=3.13"
+dependencies = [
+    "aiolimiter>=1.2.1",
+    "fastmcp>=3.0",
+    "httpx>=0.28",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.2",
+    "structlog>=26.1.0",
+    "tenacity>=9.1.4",
+]
+
+[project.scripts]
+moodle-mcp = "moodle_mcp.cli:main"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.19",
+    "pytest>=8",
+    "pytest-cov>=6",
+    "ty>=0.0.53",
+    "pre-commit>=4.6.0",
+    "commitizen>=4.16.4",
+    "pytest-xdist>=3.8.0",
+    "import-linter>=2.12",
+    "bandit>=1.9.4",
+    "hypothesis>=6.155.7",
+    "pytest-asyncio>=1.4.0",
+    "pytest-httpx>=0.36.2",
+    "inline-snapshot>=0.34.2",
+    "time-machine>=3.2.0",
+    "detect-secrets>=1.5.0",
+    "pip-audit>=2.10.1",
+    "dirty-equals>=0.11",
+    "deptry>=0.25.1",
+    "basedpyright>=1.39.8",
+]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+# =============================================================================
+# Ruff — linter & formatter
+# =============================================================================
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+preview = true
+select = [
+    # pycodestyle
+    "E", "F", "W",
+    # import sorting
+    "I",
+    # naming (PEP 8)
+    "N",
+    # pyupgrade (3.13+ idioms)
+    "UP",
+    # flake8-bugbear (bug detector)
+    "B",
+    # flake8-comprehensions
+    "C4",
+    # flake8-builtins (shadowing builtins)
+    "A",
+    # flake8-simplify
+    "SIM",
+    # ruff-specific rules
+    "RUF",
+    # pylint: general usefulness (no C/E prefixes — too noisy)
+    "PL",
+    # flake8-pie
+    "PIE",
+    # flake8-print (no print in production code)
+    "T20",
+    # flake8-implicit-str-concat
+    "ISC",
+    # flake8-async
+    "ASYNC",
+    # flake8-pyi (type-hint conventions)
+    "PYI",
+    # from __future__ import annotations (you already use it)
+    "FA",
+    # flynt (f-strings over .format())
+    "FLY",
+    # flake8-errmsg (raise with error message var)
+    "EM",
+    # flake8-type-checking (imports guarded by TYPE_CHECKING)
+    "TCH",
+    # flake8-int-argument-to-range
+    "INT",
+    # redundant slash continuation
+    "RSE",
+    # flake8-pytest-style (test conventions)
+    "PT",
+    # pylint's warning about bare except, etc.
+    "PLE", "PLW",
+]
+ignore = [
+    "E501",     # line-too-long — handled by formatter
+    "ISC001",   # implicit-str-concat — formatter handles this
+    "B905",     # zip-without-strict — often unnecessary
+    "SIM114",   # combine-into-if-expr — sometimes less readable
+    "SIM108",   # if-else-as-ternary — fights readability
+    "PLR2004",  # magic-value-comparison — too noisy
+    "PLR0913",  # too-many-arguments — 5+ params are sometimes fine
+    "EM101",    # str-raise — requires extracting all error strings
+    "EM102",    # exception-without-ergo — too strict
+    "T201",     # print — CLI entry points use print legitimately
+    "ASYNC109", # async-function-with-timeout — false positives
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["N"    # naming violations in re-exports
+]
+"tests/*.py" = [
+    "T20",      # print in tests is fine
+    "PLR2004",  # magic numbers in test assertions
+    "PLR0913",  # many args in test helpers
+    "PT009",    # use assert over unittest.TestCase
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.isort]
+known-first-party = ["moodle_mcp"]
+known-third-party = [
+    "aiolimiter",
+    "dirty_equals",
+    "fastmcp",
+    "httpx",
+    "hypothesis",
+    "inline_snapshot",
+    "pydantic",
+    "pydantic_settings",
+    "pytest",
+    "pytest_httpx",
+    "structlog",
+    "tenacity",
+    "time_machine",
+]
+force-sort-within-sections = true
+combine-as-imports = true
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# =============================================================================
+# Pytest
+# =============================================================================
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "live_moodle: opt-in tests that call the configured Moodle site",
+]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--cov=moodle_mcp",
+    "--cov-report=term-missing",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
+
+[tool.inline-snapshot]
+format-command = "uv run ruff format --stdin-filename {filename} -"
+
+# =============================================================================
+# ty — static type checking
+# =============================================================================
+
+[tool.ty.environment]
+python-version = "3.13"
+root = ["./src"]
+
+[tool.ty.src]
+include = ["src", "tests", "main.py"]
+
+[tool.ty.rules]
+all = "error"
+
+# =============================================================================
+# Basedpyright — static type checking
+# =============================================================================
+
+[tool.basedpyright]
+include = ["src", "tests", "main.py"]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
+
+# =============================================================================
+# Commitizen — Conventional Commits
+# =============================================================================
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+version_files = ["pyproject.toml:version"]
+tag_format = "v$version"
+
+# =============================================================================
+# Import Linter — architecture contracts
+# =============================================================================
+
+[tool.importlinter]
+root_package = "moodle_mcp"
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Moodle MCP layered architecture"
+type = "layers"
+layers = [
+    "moodle_mcp.cli",
+    "moodle_mcp.server",
+    "moodle_mcp.tools : moodle_mcp.resources : moodle_mcp.prompts",
+    "moodle_mcp.api",
+    "moodle_mcp.moodle",
+    "moodle_mcp.config : moodle_mcp.models",
+]
+
+# =============================================================================
+# Bandit — security linting
+# =============================================================================
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "build", "dist"]
+
+# =============================================================================
+# Deptry — dependency hygiene
+# =============================================================================
+
+[tool.deptry]
+known_first_party = ["moodle_mcp"]
+extend_exclude = ["docs"]
