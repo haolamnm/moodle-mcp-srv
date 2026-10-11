@@ -62,7 +62,23 @@ To find a token, log in to Moodle and check:
 https://moodle.example.edu/user/managetoken.php
 ```
 
-Some Moodle sites hide or disable self-service tokens. In that case, ask the Moodle admin for a web-service token for your account.
+If the token is masked with dots (`••••`), inspect the element in browser DevTools and copy its `value` attribute (or change `type="password"` to `type="text"`).
+
+If self-service tokens are hidden/disabled or your institution enforces SSO (Google, Microsoft, SAML), extract the mobile web service token through the Moodle mobile launch endpoint:
+
+1. Log in to your Moodle portal in the browser.
+2. In the same browser session, open:
+   ```text
+   https://moodle.example.edu/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile
+   ```
+3. The browser will redirect to `moodlemobile://token=<base64_string>`. Copy the encoded string after `token=`.
+4. Decode it in your browser DevTools console:
+   ```js
+   atob("<base64_string>").split(":::")[1]
+   ```
+5. Use the resulting 32-character hex token as `MOODLE_API_TOKEN`.
+
+If your site disables mobile web services entirely, ask the Moodle administrator for a web-service token for your account.
 
 Quick connection check after setting credentials:
 
