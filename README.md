@@ -67,12 +67,12 @@ If the token is masked with dots (`••••`), inspect the element in browse
 If self-service tokens are hidden/disabled or your institution enforces SSO (Google, Microsoft, SAML), extract the mobile web service token through the Moodle mobile launch endpoint:
 
 1. Log in to your Moodle portal in the browser.
-2. In the same browser session, open:
-   ```text
-   https://moodle.example.edu/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile
+2. Open browser DevTools (`F12` -> Console) and run:
+   ```js
+   window.location.href = `${window.location.origin}/admin/tool/mobile/launch.php?service=moodle_mobile_app&passport=12345&urlscheme=moodlemobile`;
    ```
 3. The browser will redirect to `moodlemobile://token=<base64_string>`. Copy the encoded string after `token=`.
-4. Decode it in your browser DevTools console:
+4. In the console, decode the token payload:
    ```js
    atob("<base64_string>").split(":::")[1]
    ```
